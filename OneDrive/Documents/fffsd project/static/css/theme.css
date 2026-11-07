@@ -1,0 +1,327 @@
+/* ==========================================================================
+   AuraHealth AI - Design System: "A Medical Clinic Told Through Ink in Water"
+   Color Palette: Deep Forest Green, Emerald, Sage, Soft Olive, Warm Ivory
+   ========================================================================== */
+
+:root {
+    --color-forest: #0B291B;
+    --color-forest-dark: #061910;
+    --color-emerald: #104C35;
+    --color-emerald-light: #186849;
+    --color-sage: #6A8E7F;
+    --color-sage-light: #EBF1EE;
+    --color-sage-soft: #D5E1DC;
+    --color-olive: #8A9A5B;
+    --color-ivory: #FBF9F5;
+    --color-white: #FFFFFF;
+    --color-charcoal: #1F2421;
+    --color-charcoal-light: #59655F;
+    --color-border: #E2E8E4;
+    --color-card-bg: rgba(255, 255, 255, 0.95);
+    
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    
+    --shadow-subtle: 0 4px 20px rgba(11, 41, 27, 0.05);
+    --shadow-card: 0 12px 36px rgba(11, 41, 27, 0.08);
+    --shadow-card-hover: 0 20px 50px rgba(11, 41, 27, 0.14);
+    --shadow-hero-glow: 0 0 60px rgba(16, 76, 53, 0.2);
+    
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 24px;
+    --radius-xl: 36px;
+}
+
+/* ==========================================================================
+   Base & Typography
+   ========================================================================== */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--color-ivory);
+    color: var(--color-charcoal);
+    line-height: 1.65;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+    color: var(--color-forest);
+    letter-spacing: -0.02em;
+}
+
+.text-forest { color: var(--color-forest) !important; }
+.text-emerald { color: var(--color-emerald) !important; }
+.text-sage { color: var(--color-sage) !important; }
+.bg-forest { background-color: var(--color-forest) !important; }
+.bg-emerald { background-color: var(--color-emerald) !important; }
+.bg-sage-light { background-color: var(--color-sage-light) !important; }
+.bg-ivory { background-color: var(--color-ivory) !important; }
+
+/* ==========================================================================
+   Hero Section: Interactive 3D DNA & Fluid Ink
+   ========================================================================== */
+.hero-wrapper {
+    position: relative;
+    min-height: 92vh;
+    display: flex;
+    align-items: center;
+    background: radial-gradient(circle at 65% 50%, rgba(235, 241, 238, 0.7) 0%, rgba(251, 249, 245, 1) 70%);
+    overflow: hidden;
+}
+
+#hero-webgl-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: auto; /* Listens for mouse repulsion physics */
+}
+
+.hero-content-layer {
+    position: relative;
+    z-index: 2;
+    pointer-events: none; /* Let canvas capture mouse movement while allowing links to work */
+}
+
+.hero-content-layer a,
+.hero-content-layer button,
+.hero-content-layer .interactive {
+    pointer-events: auto;
+}
+
+.hero-headline {
+    font-size: clamp(2.8rem, 5.2vw, 4.4rem);
+    font-weight: 700;
+    line-height: 1.12;
+    color: var(--color-forest);
+    margin-bottom: 1.4rem;
+}
+
+.hero-headline em {
+    font-style: italic;
+    color: var(--color-emerald);
+}
+
+.hero-subtitle {
+    font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+    color: var(--color-charcoal-light);
+    max-width: 580px;
+    margin-bottom: 2.2rem;
+    line-height: 1.6;
+}
+
+.hero-stat-badge {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(16, 76, 53, 0.15);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1.25rem;
+    box-shadow: var(--shadow-subtle);
+}
+
+/* ==========================================================================
+   Cursor-Reactive Photography Trail
+   ========================================================================== */
+.photo-trail-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 999;
+    overflow: hidden;
+}
+
+.photo-trail-node {
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border-radius: 50% 40% 60% 45% / 45% 55% 45% 55%; /* Organic biological cell shape */
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 14px 35px rgba(11, 41, 27, 0.22);
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease-out;
+}
+
+/* ==========================================================================
+   Horizontal Scroll-Driven Services Rail (GSAP ScrollTrigger)
+   ========================================================================== */
+.services-rail-viewport {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: var(--color-forest);
+    color: #fff;
+    padding: 5rem 0;
+}
+
+.services-rail-header {
+    color: #fff;
+    margin-bottom: 3rem;
+}
+
+.services-rail-header h2 {
+    color: #fff;
+}
+
+.services-rail-track {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 2rem;
+    padding: 0 2rem;
+    width: max-content;
+    will-change: transform;
+}
+
+.service-card {
+    flex: 0 0 380px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-lg);
+    padding: 2.2rem;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.service-card:hover {
+    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(138, 154, 91, 0.4);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
+}
+
+.service-card-number {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--color-olive);
+    font-weight: 500;
+    margin-bottom: 1.2rem;
+}
+
+.service-card-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--color-emerald), var(--color-forest));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.service-card h3 {
+    font-size: 1.45rem;
+    color: #fff;
+    margin-bottom: 0.9rem;
+}
+
+/* ==========================================================================
+   Overlapping Storytelling Containers
+   ========================================================================== */
+.story-section {
+    position: relative;
+    border-radius: var(--radius-xl);
+    padding: 5.5rem 0;
+    margin-top: -32px;
+    box-shadow: 0 -12px 35px rgba(11, 41, 27, 0.04);
+}
+
+.story-section.bg-light-organic {
+    background-color: var(--color-ivory);
+    border-top: 1px solid var(--color-border);
+}
+
+.story-section.bg-white-clean {
+    background-color: var(--color-white);
+    border-top: 1px solid var(--color-border);
+}
+
+.story-section.bg-forest-deep {
+    background-color: var(--color-forest);
+    color: #fff;
+}
+
+/* Feature Showcase Cards */
+.showcase-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 2.2rem;
+    box-shadow: var(--shadow-card);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.showcase-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--color-sage);
+}
+
+/* Micro-Badges */
+.pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.pill-badge-emerald {
+    background-color: rgba(16, 76, 53, 0.1);
+    color: var(--color-emerald);
+    border: 1px solid rgba(16, 76, 53, 0.2);
+}
+
+.pill-badge-olive {
+    background-color: rgba(138, 154, 91, 0.12);
+    color: #5C6A39;
+    border: 1px solid rgba(138, 154, 91, 0.25);
+}
+
+/* Research Comparison Table */
+.table-research {
+    background: #fff;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+
+.table-research th {
+    background-color: var(--color-forest);
+    color: #fff;
+    font-weight: 600;
+    padding: 1.1rem;
+    font-size: 0.95rem;
+}
+
+.table-research td {
+    padding: 1.1rem;
+    vertical-align: middle;
+    border-color: var(--color-border);
+    font-size: 0.92rem;
+}

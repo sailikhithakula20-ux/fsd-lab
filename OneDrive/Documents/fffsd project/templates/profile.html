@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Health Profile & Settings - AuraHealth AI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    
+    <!-- Profile Page Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-2 border-bottom">
+        <div>
+            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1 rounded-pill mb-2">
+                <i class="bi bi-person-gear me-1"></i> Patient Configuration
+            </span>
+            <h1 class="h2 fw-bold mb-1" style="color: var(--color-forest);">
+                Health Profile & Nutritional Targets
+            </h1>
+            <p class="text-muted small mb-0">
+                Manage your physiological parameters, dietary restrictions, and baseline metabolic targets.
+            </p>
+        </div>
+        <div>
+            <a href="/dashboard" class="btn btn-outline-forest btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Return to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        
+        <!-- Left Column: Physiological Summary & Calculated Baselines -->
+        <div class="col-lg-4">
+            
+            <!-- BMI Status Card -->
+            <div class="glass-card p-4 mb-4 text-center">
+                <div class="text-muted small text-uppercase fw-bold letter-spacing-1 mb-2">Body Mass Index (BMI)</div>
+                
+                {% set bmi = user.profile.bmi or user.profile.calculate_bmi() %}
+                {% set cat = user.profile.get_bmi_category() %}
+                
+                <div class="display-4 fw-bold my-2" style="color: var(--color-forest); font-family: var(--font-display);">
+                    {{ bmi }}
+                </div>
+                
+                <div>
+                    <span class="badge px-3 py-2 rounded-pill fs-6 
+                        {% if cat == 'Normal weight' %}bg-success
+                        {% elif cat == 'Overweight' %}bg-warning text-dark
+                        {% elif cat == 'Obese' %}bg-danger
+                        {% else %}bg-secondary{% endif %}">
+                        {{ cat }}
+                    </span>
+                </div>
+                
+                <p class="small text-muted mt-3 mb-0">
+                    Calculated from Height: <strong>{{ user.profile.height_cm }} cm</strong> & Weight: <strong>{{ user.profile.weight_kg }} kg</strong>.
+                </p>
+            </div>
+
+            <!-- Daily Metabolic Targets Card -->
+            <div class="glass-card p-4 mb-4">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2" style="color: var(--color-forest);">
+                    <i class="bi bi-lightning-charge-fill text-warning"></i>
+                    Daily Baseline Requirements
+                </h6>
+                
+                {% set targets = user.nutrition_targets %}
+                {% if targets %}
+                    <ul class="list-unstyled d-flex flex-column gap-3 mb-0 small">
+                        <li class="d-flex justify-content-between align-items-center pb-2 border-bottom">
+                            <span class="text-muted">Daily Calorie Target (TDEE):</span>
+                            <strong class="text-dark fs-6">{{ targets.target_calories|round(0) }} kcal</strong>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center pb-2 border-bottom">
+                            <span class="text-muted">Target Protein (ICMR-NIN):</span>
+                            <strong class="text-success">{{ targets.target_protein_g|round(1) }} g</strong>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center pb-2 border-bottom">
+                            <span class="text-muted">Target Carbohydrates:</span>
+                            <strong class="text-dark">{{ targets.target_carbs_g|round(1) }} g</strong>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center pb-2 border-bottom">
+                            <span class="text-muted">Target Healthy Fats:</span>
+                            <strong class="text-dark">{{ targets.target_fats_g|round(1) }} g</strong>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center pb-2 border-bottom">
+                            <span class="text-muted">Dietary Fiber Minimum:</span>
+                            <strong class="text-dark">{{ targets.target_fiber_g|round(1) }} g</strong>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Hydration Target:</span>
+                            <strong class="text-primary">{{ targets.target_water_ml|round(0) }} ml</strong>
+                        </li>
+                    </ul>
+                {% else %}
+                    <p class="small text-muted mb-0">Targets will initialize automatically on profile save.</p>
+                {% endif %}
+            </div>
+
+            <!-- Allergy Alert Card -->
+            <div class="glass-card p-4">
+                <h6 class="fw-bold mb-2 text-danger d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-x"></i> Active Food Filter Restrictions
+                </h6>
+                {% if user.profile.food_allergies %}
+                    <div class="d-flex flex-wrap gap-1 mt-2">
+                        {% for allergy in user.profile.food_allergies.split(',') %}
+                            {% if allergy.strip() %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">
+                                    {{ allergy.strip() }}
+                                </span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="small text-muted mt-2">
+                        Dishes containing these allergens are suppressed from the Recommendation Engine.
+                    </div>
+                {% else %}
+                    <p class="small text-muted mb-0">No active food allergies recorded.</p>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- Right Column: Profile Form & Password Change -->
+        <div class="col-lg-8">
+            
+            <!-- Update Profile Card -->
+            <div class="glass-card p-4 p-md-5 mb-4">
+                <h4 class="fw-bold mb-4" style="color: var(--color-forest);">
+                    <i class="bi bi-pencil-square me-2"></i> Update Physiological Metrics
+                </h4>
+
+                <form method="POST" action="{{ url_for('auth.profile') }}" novalidate>
+                    {{ profile_form.hidden_tag() }}
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="{{ profile_form.full_name.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ profile_form.full_name.label.text }}
+                            </label>
+                            {{ profile_form.full_name(class="form-control") }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Account Email</label>
+                            <input type="text" class="form-control bg-light" value="{{ user.email }}" readonly>
+                            <div class="form-text small">Email cannot be modified directly.</div>
+                        </div>
+
+                        <div class="col-sm-6 col-md-3">
+                            <label for="{{ profile_form.age.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ profile_form.age.label.text }}
+                            </label>
+                            {{ profile_form.age(class="form-control") }}
+                        </div>
+
+                        <div class="col-sm-6 col-md-3">
+                            <label for="{{ profile_form.gender.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ profile_form.gender.label.text }}
+                            </label>
+                            {{ profile_form.gender(class="form-select") }}
+                        </div>
+
+                        <div class="col-sm-6 col-md-3">
+                            <label for="{{ profile_form.height_cm.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ profile_form.height_cm.label.text }}
+                            </label>
+                            {{ profile_form.height_cm(class="form-control") }}
+                        </div>
+
+                        <div class="col-sm-6 col-md-3">
+                            <label for="{{ profile_form.weight_kg.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ profile_form.weight_kg.label.text }}
+                            </label>
+                            {{ profile_form.weight_kg(class="form-control") }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ profile_form.activity_level.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ profile_form.activity_level.label.text }}
+                            </label>
+                            {{ profile_form.activity_level(class="form-select") }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ profile_form.dietary_preference.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ profile_form.dietary_preference.label.text }}
+                            </label>
+                            {{ profile_form.dietary_preference(class="form-select") }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ profile_form.regional_preference.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ profile_form.regional_preference.label.text }}
+                            </label>
+                            {{ profile_form.regional_preference(class="form-select") }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ profile_form.food_allergies.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ profile_form.food_allergies.label.text }}
+                            </label>
+                            {{ profile_form.food_allergies(class="form-control") }}
+                        </div>
+
+                        <div class="col-12">
+                            <label for="{{ profile_form.dietary_restrictions.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ profile_form.dietary_restrictions.label.text }}
+                            </label>
+                            {{ profile_form.dietary_restrictions(class="form-control") }}
+                            <div class="form-text small">e.g. low_sodium, low_sugar, diabetic_friendly</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        {{ profile_form.submit(class="btn btn-forest px-4") }}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Password Change Card -->
+            <div class="glass-card p-4 p-md-5">
+                <h4 class="fw-bold mb-4" style="color: var(--color-forest);">
+                    <i class="bi bi-key-fill me-2"></i> Account Security & Password
+                </h4>
+
+                <form method="POST" action="{{ url_for('auth.change_password') }}" novalidate>
+                    {{ password_form.hidden_tag() }}
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="{{ password_form.current_password.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ password_form.current_password.label.text }}
+                            </label>
+                            {{ password_form.current_password(class="form-control") }}
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="{{ password_form.new_password.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ password_form.new_password.label.text }}
+                            </label>
+                            {{ password_form.new_password(class="form-control") }}
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="{{ password_form.confirm_new_password.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ password_form.confirm_new_password.label.text }}
+                            </label>
+                            {{ password_form.confirm_new_password(class="form-control") }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        {{ password_form.submit(class="btn btn-outline-forest px-4") }}
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

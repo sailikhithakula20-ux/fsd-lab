@@ -1,0 +1,606 @@
+{% extends "base.html" %}
+
+{% block title %}AI Healthcare Assistant | AuraHealth AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        max-width: 960px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 180px);
+        min-height: 500px;
+    }
+
+    .chat-header-card {
+        background: linear-gradient(135deg, rgba(11, 41, 27, 0.05) 0%, rgba(16, 76, 53, 0.08) 100%);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        padding: 1.5rem 2rem;
+        flex-shrink: 0;
+    }
+
+    .chat-messages-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem 2rem;
+        background: #FAFBF9;
+        border-left: 1px solid var(--color-border);
+        border-right: 1px solid var(--color-border);
+        scroll-behavior: smooth;
+    }
+
+    .chat-input-bar {
+        background: var(--color-card-bg);
+        border: 1px solid var(--color-border);
+        border-top: none;
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        padding: 1.25rem 1.5rem;
+        flex-shrink: 0;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Message Bubbles */
+    .msg-row {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+        animation: fadeSlideUp 0.3s ease;
+    }
+
+    @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-row-user {
+        flex-direction: row-reverse;
+    }
+
+    .msg-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .avatar-user {
+        background: linear-gradient(135deg, var(--color-forest), var(--color-emerald));
+        color: #fff;
+    }
+
+    .avatar-assistant {
+        background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+        color: var(--color-forest);
+        border: 1px solid #A5D6A7;
+    }
+
+    .msg-bubble {
+        max-width: 75%;
+        padding: 0.9rem 1.2rem;
+        border-radius: var(--radius-md);
+        font-size: 0.93rem;
+        line-height: 1.65;
+        position: relative;
+    }
+
+    .bubble-user {
+        background: var(--color-forest);
+        color: #fff;
+        border-bottom-right-radius: 4px;
+    }
+
+    .bubble-assistant {
+        background: #fff;
+        color: var(--color-charcoal);
+        border: 1px solid var(--color-border);
+        border-bottom-left-radius: 4px;
+        box-shadow: var(--shadow-subtle);
+    }
+
+    .bubble-assistant p { margin-bottom: 0.5rem; }
+    .bubble-assistant p:last-child { margin-bottom: 0; }
+    .bubble-assistant ul, .bubble-assistant ol { margin: 0.3rem 0; padding-left: 1.3rem; }
+    .bubble-assistant li { margin-bottom: 0.2rem; }
+    .bubble-assistant strong { color: var(--color-forest); }
+    .bubble-assistant code { background: #F0F4F1; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.85em; }
+
+    .msg-timestamp {
+        font-size: 0.72rem;
+        color: rgba(0, 0, 0, 0.35);
+        margin-top: 0.35rem;
+    }
+
+    .msg-row-user .msg-timestamp {
+        text-align: right;
+        color: rgba(255, 255, 255, 0.45);
+    }
+
+    .citation-drawer {
+        margin-top: 0.6rem;
+        padding: 0.5rem 0.75rem;
+        background: rgba(11, 41, 27, 0.04);
+        border-radius: 8px;
+        border: 1px solid rgba(11, 41, 27, 0.08);
+    }
+
+    .citation-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.72rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 50px;
+        background: var(--color-sage-light);
+        color: var(--color-forest);
+        font-weight: 600;
+        margin: 0.15rem 0.15rem;
+    }
+
+    /* Typing Indicator */
+    .typing-indicator {
+        display: none;
+        padding: 0.5rem 0;
+    }
+
+    .typing-dots {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+    }
+
+    .typing-dots span {
+        width: 7px;
+        height: 7px;
+        background: var(--color-sage);
+        border-radius: 50%;
+        animation: typingBounce 1.2s infinite ease-in-out;
+    }
+
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-5px); }
+    }
+
+    /* Input Area */
+    .chat-input-wrapper {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-end;
+    }
+
+    .chat-input-wrapper textarea {
+        border: 1.5px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        padding: 0.75rem 1rem;
+        font-size: 0.93rem;
+        font-family: var(--font-sans);
+        resize: none;
+        flex: 1;
+        min-height: 44px;
+        max-height: 120px;
+        transition: border-color 0.2s;
+        line-height: 1.5;
+    }
+
+    .chat-input-wrapper textarea:focus {
+        outline: none;
+        border-color: var(--color-forest);
+        box-shadow: 0 0 0 3px rgba(16, 76, 53, 0.1);
+    }
+
+    .btn-send {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--color-forest);
+        color: #fff;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .btn-send:hover {
+        background: var(--color-emerald);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 76, 53, 0.3);
+    }
+
+    .btn-send:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Welcome State */
+    .welcome-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .welcome-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--color-sage-light), rgba(16, 76, 53, 0.12));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--color-forest);
+        margin-bottom: 1.25rem;
+    }
+
+    .starter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.55rem 1rem;
+        border-radius: 50px;
+        font-size: 0.84rem;
+        font-weight: 500;
+        border: 1px solid var(--color-border);
+        background: #fff;
+        color: var(--color-charcoal);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: left;
+    }
+
+    .starter-chip:hover {
+        border-color: var(--color-forest);
+        color: var(--color-forest);
+        background: var(--color-sage-light);
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+
+    <div class="chat-container">
+
+        <!-- Chat Header -->
+        <div class="chat-header-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="welcome-icon mb-0" style="width: 42px; height: 42px; font-size: 1.3rem;">
+                        <i class="bi bi-chat-quote"></i>
+                    </div>
+                    <div>
+                        <h1 class="h5 mb-0 fw-bold" style="font-family: var(--font-display); color: var(--color-forest);">
+                            AuraHealth AI Assistant
+                        </h1>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted small">RAG-Grounded Clinical Knowledge</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.68rem;">
+                                <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> Active
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light text-muted border" style="font-size: 0.72rem;">
+                        <i class="bi bi-journal-medical me-1"></i> ICMR-NIN 2020 RDA
+                    </span>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="clearChat()" title="Clear Conversation">
+                        <i class="bi bi-trash3 me-1"></i> Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Messages Area -->
+        <div class="chat-messages-area" id="chatMessagesArea">
+
+            {% if messages %}
+                {% for msg in messages %}
+                    <div class="msg-row {{ 'msg-row-user' if msg.sender == 'user' else '' }}">
+                        <div class="msg-avatar {{ 'avatar-user' if msg.sender == 'user' else 'avatar-assistant' }}">
+                            <i class="bi {{ 'bi-person-fill' if msg.sender == 'user' else 'bi-heart-pulse' }}"></i>
+                        </div>
+                        <div>
+                            <div class="msg-bubble {{ 'bubble-user' if msg.sender == 'user' else 'bubble-assistant' }}">
+                                {% if msg.sender == 'assistant' %}
+                                    <div class="assistant-content">{{ msg.message | replace('\n', '<br>') | safe }}</div>
+                                {% else %}
+                                    {{ msg.message }}
+                                {% endif %}
+                            </div>
+                            {% if msg.sender == 'assistant' and msg.citations %}
+                                <div class="citation-drawer">
+                                    <span class="text-muted d-block mb-1" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        <i class="bi bi-bookmark-check me-1"></i> Knowledge Sources
+                                    </span>
+                                    {% for cit in msg.citations %}
+                                        <span class="citation-tag">
+                                            <i class="bi bi-file-earmark-text"></i>
+                                            {{ cit.source }} - {{ cit.heading }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="msg-timestamp">{{ msg.timestamp }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <!-- Welcome State -->
+                <div class="welcome-state" id="welcomeState">
+                    <div class="welcome-icon">
+                        <i class="bi bi-chat-quote"></i>
+                    </div>
+                    <h3 class="h4 fw-bold mb-2" style="font-family: var(--font-display); color: var(--color-forest);">
+                        How can I help you today?
+                    </h3>
+                    <p class="text-muted mb-4" style="max-width: 500px; font-size: 0.93rem;">
+                        I'm grounded in ICMR-NIN 2020 dietary guidelines, Indian food composition data,
+                        and peer-reviewed preventive healthcare literature.
+                    </p>
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <button class="starter-chip" onclick="sendStarterMessage('What are the daily protein requirements for an Indian vegetarian adult?')">
+                            <i class="bi bi-egg text-success"></i> Protein needs for vegetarians
+                        </button>
+                        <button class="starter-chip" onclick="sendStarterMessage('What Indian foods help manage blood sugar levels naturally?')">
+                            <i class="bi bi-droplet text-warning"></i> Foods for blood sugar control
+                        </button>
+                        <button class="starter-chip" onclick="sendStarterMessage('How much water should I drink daily based on my body weight?')">
+                            <i class="bi bi-cup-straw text-primary"></i> Hydration guidelines
+                        </button>
+                        <button class="starter-chip" onclick="sendStarterMessage('What are the health benefits of millets like ragi and jowar?')">
+                            <i class="bi bi-flower1 text-success"></i> Benefits of millets
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="msg-row">
+                    <div class="msg-avatar avatar-assistant">
+                        <i class="bi bi-heart-pulse"></i>
+                    </div>
+                    <div class="msg-bubble bubble-assistant" style="padding: 0.75rem 1rem;">
+                        <div class="typing-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="chat-input-bar">
+            <div class="chat-input-wrapper">
+                <textarea
+                    id="chatInput"
+                    placeholder="Ask about nutrition, exercise, sleep, Indian foods, or preventive health..."
+                    rows="1"
+                    maxlength="2000"
+                    onkeydown="handleInputKeydown(event)"
+                    oninput="autoResize(this)"
+                ></textarea>
+                <button class="btn-send" id="btnSend" onclick="sendMessage()" title="Send Message">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <span class="text-muted" style="font-size: 0.72rem;">
+                    <i class="bi bi-shield-check me-1 text-success"></i>
+                    Responses grounded in verified ICMR-NIN clinical knowledge. Not a medical prescription.
+                </span>
+                <span class="text-muted" style="font-size: 0.72rem;" id="charCount">0 / 2000</span>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const CSRF_TOKEN = "{{ csrf_token() if csrf_token is defined else '' }}";
+    let isProcessing = false;
+
+    function getJsonHeaders() {
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        if (csrfMeta) headers['X-CSRFToken'] = csrfMeta.getAttribute('content');
+        else if (CSRF_TOKEN) headers['X-CSRFToken'] = CSRF_TOKEN;
+        return headers;
+    }
+
+    // Auto-scroll to bottom
+    function scrollToBottom() {
+        const area = document.getElementById('chatMessagesArea');
+        area.scrollTop = area.scrollHeight;
+    }
+
+    // Auto-resize textarea
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        document.getElementById('charCount').innerText = `${textarea.value.length} / 2000`;
+    }
+
+    // Handle Enter key (Shift+Enter for newline)
+    function handleInputKeydown(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    }
+
+    // Send starter message (from welcome chips)
+    function sendStarterMessage(text) {
+        document.getElementById('chatInput').value = text;
+        sendMessage();
+    }
+
+    // Append a message bubble to the chat area
+    function appendMessage(sender, text, citations = [], timestamp = null) {
+        const area = document.getElementById('chatMessagesArea');
+
+        // Remove welcome state if present
+        const welcome = document.getElementById('welcomeState');
+        if (welcome) welcome.remove();
+
+        const isUser = sender === 'user';
+        const now = timestamp || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+        let citationHtml = '';
+        if (!isUser && citations && citations.length > 0) {
+            const tags = citations.map(c =>
+                `<span class="citation-tag"><i class="bi bi-file-earmark-text"></i> ${c.source} - ${c.heading}</span>`
+            ).join('');
+            citationHtml = `
+                <div class="citation-drawer">
+                    <span class="text-muted d-block mb-1" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <i class="bi bi-bookmark-check me-1"></i> Knowledge Sources
+                    </span>
+                    ${tags}
+                </div>
+            `;
+        }
+
+        // Simple markdown-like rendering for assistant messages
+        let displayText = text;
+        if (!isUser) {
+            displayText = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                .replace(/^- (.+)/gm, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+                .replace(/\n/g, '<br>');
+        }
+
+        const msgHtml = `
+            <div class="msg-row ${isUser ? 'msg-row-user' : ''}">
+                <div class="msg-avatar ${isUser ? 'avatar-user' : 'avatar-assistant'}">
+                    <i class="bi ${isUser ? 'bi-person-fill' : 'bi-heart-pulse'}"></i>
+                </div>
+                <div>
+                    <div class="msg-bubble ${isUser ? 'bubble-user' : 'bubble-assistant'}">
+                        ${isUser ? text : `<div class="assistant-content">${displayText}</div>`}
+                    </div>
+                    ${citationHtml}
+                    <div class="msg-timestamp">${now}</div>
+                </div>
+            </div>
+        `;
+
+        // Insert before typing indicator
+        const typingEl = document.getElementById('typingIndicator');
+        typingEl.insertAdjacentHTML('beforebegin', msgHtml);
+        scrollToBottom();
+    }
+
+    function showTyping() {
+        document.getElementById('typingIndicator').style.display = 'block';
+        scrollToBottom();
+    }
+
+    function hideTyping() {
+        document.getElementById('typingIndicator').style.display = 'none';
+    }
+
+    // Send message to backend
+    async function sendMessage() {
+        if (isProcessing) return;
+
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        if (!message) return;
+
+        isProcessing = true;
+        document.getElementById('btnSend').disabled = true;
+
+        // Show user message immediately
+        appendMessage('user', message);
+        input.value = '';
+        input.style.height = 'auto';
+        document.getElementById('charCount').innerText = '0 / 2000';
+
+        showTyping();
+
+        try {
+            const res = await fetch('/api/v1/ai/chat', {
+                method: 'POST',
+                headers: getJsonHeaders(),
+                body: JSON.stringify({ message: message })
+            });
+
+            const data = await res.json();
+            hideTyping();
+
+            if (data.success) {
+                appendMessage('assistant', data.reply, data.citations || []);
+            } else {
+                appendMessage('assistant',
+                    'I apologize, but I encountered an issue processing your request. ' +
+                    (data.error || 'Please try again.'));
+            }
+        } catch (e) {
+            hideTyping();
+            appendMessage('assistant',
+                'I apologize, but there was a communication error. Please check your connection and try again.');
+            console.error('Chat error:', e);
+        }
+
+        isProcessing = false;
+        document.getElementById('btnSend').disabled = false;
+        input.focus();
+    }
+
+    // Clear chat history
+    async function clearChat() {
+        if (!confirm('Clear your entire conversation history with AuraHealth AI?')) return;
+
+        try {
+            const res = await fetch('/api/v1/ai/clear', {
+                method: 'POST',
+                headers: getJsonHeaders()
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            }
+        } catch (e) {
+            alert('Failed to clear chat history.');
+        }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        scrollToBottom();
+        document.getElementById('chatInput').focus();
+    });
+</script>
+{% endblock %}

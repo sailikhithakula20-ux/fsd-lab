@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Cardiovascular Disease (CVD) Clinical Risk Evaluation | AuraHealth AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container-card {
+        background: var(--color-card-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem;
+        box-shadow: var(--shadow-card);
+        max-width: 900px;
+        margin: 0 auto 3rem;
+    }
+
+    .form-section-title {
+        font-family: var(--font-display);
+        color: var(--color-forest);
+        font-weight: 700;
+        font-size: 1.15rem;
+        border-bottom: 2px solid var(--color-sage-light);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: var(--color-charcoal);
+        margin-bottom: 0.25rem;
+    }
+
+    .form-hint {
+        font-size: 0.77rem;
+        color: var(--color-charcoal-light);
+        margin-top: 0.25rem;
+    }
+
+    .clinical-disclaimer-card {
+        background: rgba(11, 41, 27, 0.04);
+        border-left: 4px solid var(--color-forest);
+        border-radius: 6px;
+        padding: 1rem 1.25rem;
+        font-size: 0.82rem;
+        color: var(--color-charcoal-light);
+        margin-top: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Breadcrumb -->
+    <div class="mb-3" style="max-width: 900px; margin: 0 auto;">
+        <a href="{{ url_for('prediction.index') }}" class="text-decoration-none text-muted small">
+            <i class="bi bi-arrow-left me-1"></i> Back to Assessment Hub
+        </a>
+    </div>
+
+    <div class="form-container-card">
+
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge" style="background: rgba(211, 47, 47, 0.12); color: #D32F2F; font-weight: 600;">
+                <i class="bi bi-heart-pulse-fill me-1"></i> Cardiology & Hemodynamic Module
+            </span>
+            <span class="text-muted small">• UCI Heart Disease Cohort Calibration</span>
+        </div>
+
+        <h1 class="h3 fw-bold mb-2" style="font-family: var(--font-display); color: var(--color-forest);">
+            Cardiovascular Disease Risk Evaluation
+        </h1>
+        <p class="text-muted small mb-4">
+            Evaluate coronary artery disease vulnerability, exertional ischemic response, and vascular strain.
+            Our Random Forest classifier interprets 12 clinical markers and resolves feature-level SHAP attributions.
+        </p>
+
+        <form method="POST" action="{{ url_for('prediction.assess_cardiovascular') }}" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Section 1: Hemodynamics & Lipids -->
+            <div class="mb-4">
+                <div class="form-section-title">
+                    <i class="bi bi-droplet-half text-danger"></i> 1. Hemodynamics & Lipid Profile
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">{{ form.resting_bp.label }}</label>
+                        {{ form.resting_bp(class="form-control" + (" is-invalid" if form.resting_bp.errors else ""), placeholder="120") }}
+                        {% if form.resting_bp.errors %}
+                            <div class="invalid-feedback">{{ form.resting_bp.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">Systolic BP: Desirable <120 mm Hg.</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">{{ form.cholesterol.label }}</label>
+                        {{ form.cholesterol(class="form-control" + (" is-invalid" if form.cholesterol.errors else ""), placeholder="200") }}
+                        {% if form.cholesterol.errors %}
+                            <div class="invalid-feedback">{{ form.cholesterol.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">Total serum cholesterol: Desirable <200 mg/dL.</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">{{ form.fasting_blood_sugar.label }}</label>
+                        {{ form.fasting_blood_sugar(class="form-select" + (" is-invalid" if form.fasting_blood_sugar.errors else "")) }}
+                        {% if form.fasting_blood_sugar.errors %}
+                            <div class="invalid-feedback">{{ form.fasting_blood_sugar.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">Is fasting blood sugar above 120 mg/dL?</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Exercise Stress & ECG Markers -->
+            <div class="mb-4">
+                <div class="form-section-title">
+                    <i class="bi bi-activity text-warning"></i> 2. Exercise Stress & Electrocardiography
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">{{ form.max_heart_rate.label }}</label>
+                        {{ form.max_heart_rate(class="form-control" + (" is-invalid" if form.max_heart_rate.errors else ""), placeholder="155") }}
+                        {% if form.max_heart_rate.errors %}
+                            <div class="invalid-feedback">{{ form.max_heart_rate.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">Peak achieved beats per minute during exercise.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">{{ form.exercise_angina.label }}</label>
+                        {{ form.exercise_angina(class="form-select" + (" is-invalid" if form.exercise_angina.errors else "")) }}
+                        {% if form.exercise_angina.errors %}
+                            <div class="invalid-feedback">{{ form.exercise_angina.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">Exertional chest discomfort or tightness.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">{{ form.st_depression.label }}</label>
+                        {{ form.st_depression(class="form-control" + (" is-invalid" if form.st_depression.errors else ""), placeholder="0.5") }}
+                        {% if form.st_depression.errors %}
+                            <div class="invalid-feedback">{{ form.st_depression.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">Oldpeak depression: Normal < 1.0 mm.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">{{ form.st_slope.label }}</label>
+                        {{ form.st_slope(class="form-select" + (" is-invalid" if form.st_slope.errors else "")) }}
+                        {% if form.st_slope.errors %}
+                            <div class="invalid-feedback">{{ form.st_slope.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">ST segment trajectory under peak exertion.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Diagnostic Symptomatology & Demographics -->
+            <div class="mb-4">
+                <div class="form-section-title">
+                    <i class="bi bi-clipboard2-pulse text-primary"></i> 3. Clinical Symptoms & Diagnostics
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">{{ form.chest_pain_type.label }}</label>
+                        {{ form.chest_pain_type(class="form-select" + (" is-invalid" if form.chest_pain_type.errors else "")) }}
+                        {% if form.chest_pain_type.errors %}
+                            <div class="invalid-feedback">{{ form.chest_pain_type.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">{{ form.resting_ecg.label }}</label>
+                        {{ form.resting_ecg(class="form-select" + (" is-invalid" if form.resting_ecg.errors else "")) }}
+                        {% if form.resting_ecg.errors %}
+                            <div class="invalid-feedback">{{ form.resting_ecg.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">{{ form.num_major_vessels.label }}</label>
+                        {{ form.num_major_vessels(class="form-select" + (" is-invalid" if form.num_major_vessels.errors else "")) }}
+                        {% if form.num_major_vessels.errors %}
+                            <div class="invalid-feedback">{{ form.num_major_vessels.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">{{ form.age.label }}</label>
+                        {{ form.age(class="form-control" + (" is-invalid" if form.age.errors else ""), placeholder="52") }}
+                        {% if form.age.errors %}
+                            <div class="invalid-feedback">{{ form.age.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">{{ form.sex.label }}</label>
+                        {{ form.sex(class="form-select" + (" is-invalid" if form.sex.errors else "")) }}
+                        {% if form.sex.errors %}
+                            <div class="invalid-feedback">{{ form.sex.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-outline-forest btn-lg py-3 fw-bold rounded-pill shadow-sm">
+                    <i class="bi bi-heart-pulse-fill text-danger me-2"></i> Execute Cardiovascular Risk Inference
+                </button>
+            </div>
+        </form>
+
+        <!-- Clinical Safety Disclaimer -->
+        <div class="clinical-disclaimer-card">
+            <strong>CLINICAL DISCLAIMER:</strong> This predictive assessment generates statistical risk estimates based
+            on machine learning algorithms trained on peer-reviewed cohorts. It does not provide clinical diagnosis or treatment.
+            Always review results with a qualified healthcare professional.
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Create Personalized Account - AuraHealth AI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            
+            <!-- Onboarding Header -->
+            <div class="text-center mb-4">
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill mb-2">
+                    <i class="bi bi-person-plus-fill me-1"></i> Preventive Health Onboarding
+                </span>
+                <h1 class="h2 fw-bold mb-2" style="color: var(--color-forest);">
+                    Initialize Your Personalized Health Profile
+                </h1>
+                <p class="text-muted small mx-auto" style="max-width: 540px;">
+                    Unlike generic health apps, AuraHealth AI computes your exact basal metabolic rate, total daily energy expenditure, and regional nutritional targets during onboarding.
+                </p>
+            </div>
+
+            <!-- Registration Form Card -->
+            <div class="glass-card p-4 p-md-5">
+                <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <!-- Section 1: Account Credentials -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                            <span class="badge bg-forest text-white rounded-circle p-2" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; background-color: var(--color-forest);">1</span>
+                            <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.05rem;">Account Credentials</h5>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.full_name.id }}" class="form-label fw-semibold small text-secondary">
+                                    {{ form.full_name.label.text }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else "")) }}
+                                {% for error in form.full_name.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.email.id }}" class="form-label fw-semibold small text-secondary">
+                                    {{ form.email.label.text }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                                {% for error in form.email.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.password.id }}" class="form-label fw-semibold small text-secondary">
+                                    {{ form.password.label.text }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                                <div class="form-text small text-muted">Minimum 8 characters.</div>
+                                {% for error in form.password.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.confirm_password.id }}" class="form-label fw-semibold small text-secondary">
+                                    {{ form.confirm_password.label.text }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else "")) }}
+                                {% for error in form.confirm_password.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Physiological Parameters -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                            <span class="badge text-white rounded-circle p-2" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; background-color: var(--color-forest);">2</span>
+                            <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.05rem;">Physiological Baseline</h5>
+                        </div>
+                        <p class="small text-muted mb-3">
+                            <i class="bi bi-info-circle me-1"></i> These metrics compute your Mifflin-St Jeor Basal Metabolic Rate (BMR) and clinical Body Mass Index (BMI).
+                        </p>
+
+                        <div class="row g-3">
+                            <div class="col-sm-6 col-md-3">
+                                <label for="{{ form.age.id }}" class="form-label fw-semibold small text-secondary">
+                                    {{ form.age.label.text }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.age(class="form-control" + (" is-invalid" if form.age.errors else "")) }}
+                                {% for error in form.age.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-sm-6 col-md-3">
+                                <label for="{{ form.gender.id }}" class="form-label fw-semibold small text-secondary">
+                                    {{ form.gender.label.text }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.gender(class="form-select" + (" is-invalid" if form.gender.errors else "")) }}
+                                {% for error in form.gender.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-sm-6 col-md-3">
+                                <label for="{{ form.height_cm.id }}" class="form-label fw-semibold small text-secondary">
+                                    {{ form.height_cm.label.text }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.height_cm(class="form-control" + (" is-invalid" if form.height_cm.errors else "")) }}
+                                {% for error in form.height_cm.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-sm-6 col-md-3">
+                                <label for="{{ form.weight_kg.id }}" class="form-label fw-semibold small text-secondary">
+                                    {{ form.weight_kg.label.text }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.weight_kg(class="form-control" + (" is-invalid" if form.weight_kg.errors else "")) }}
+                                {% for error in form.weight_kg.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Lifestyle & Regional Preferences -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                            <span class="badge text-white rounded-circle p-2" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; background-color: var(--color-forest);">3</span>
+                            <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.05rem;">Dietary & Regional Lifestyle</h5>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.activity_level.id }}" class="form-label fw-semibold small text-secondary">
+                                    {{ form.activity_level.label.text }}
+                                </label>
+                                {{ form.activity_level(class="form-select") }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.dietary_preference.id }}" class="form-label fw-semibold small text-secondary">
+                                    {{ form.dietary_preference.label.text }}
+                                </label>
+                                {{ form.dietary_preference(class="form-select") }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.regional_preference.id }}" class="form-label fw-semibold small text-secondary">
+                                    {{ form.regional_preference.label.text }}
+                                </label>
+                                {{ form.regional_preference(class="form-select") }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.budget_preference.id }}" class="form-label fw-semibold small text-secondary">
+                                    {{ form.budget_preference.label.text }}
+                                </label>
+                                {{ form.budget_preference(class="form-select") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Allergies & Consent -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                            <span class="badge text-white rounded-circle p-2" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; background-color: var(--color-forest);">4</span>
+                            <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.05rem;">Allergy Safety & Informed Consent</h5>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.food_allergies.id }}" class="form-label fw-semibold small text-secondary">
+                                {{ form.food_allergies.label.text }}
+                            </label>
+                            {{ form.food_allergies(class="form-control") }}
+                            <div class="form-text small text-muted">
+                                The recommendation engine automatically excludes matching food items from all suggestions.
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-light rounded-3 border">
+                            <div class="form-check">
+                                {{ form.consent(class="form-check-input" + (" is-invalid" if form.consent.errors else "")) }}
+                                <label class="form-check-label small text-secondary" for="{{ form.consent.id }}">
+                                    {{ form.consent.label.text }}
+                                </label>
+                                {% for error in form.consent.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid pt-2">
+                        {{ form.submit(class="btn btn-forest py-2 fw-semibold fs-6") }}
+                    </div>
+
+                    <div class="text-center mt-3 pt-2">
+                        <span class="small text-muted">Already registered?</span>
+                        <a href="{{ url_for('auth.login') }}" class="small fw-bold text-success text-decoration-none ms-1">
+                            Sign in to your account
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Type 2 Diabetes Clinical Risk Evaluation | AuraHealth AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container-card {
+        background: var(--color-card-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem;
+        box-shadow: var(--shadow-card);
+        max-width: 880px;
+        margin: 0 auto 3rem;
+    }
+
+    .form-section-title {
+        font-family: var(--font-display);
+        color: var(--color-forest);
+        font-weight: 700;
+        font-size: 1.15rem;
+        border-bottom: 2px solid var(--color-sage-light);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: var(--color-charcoal);
+        margin-bottom: 0.25rem;
+    }
+
+    .form-hint {
+        font-size: 0.77rem;
+        color: var(--color-charcoal-light);
+        margin-top: 0.25rem;
+    }
+
+    .clinical-disclaimer-card {
+        background: rgba(11, 41, 27, 0.04);
+        border-left: 4px solid var(--color-forest);
+        border-radius: 6px;
+        padding: 1rem 1.25rem;
+        font-size: 0.82rem;
+        color: var(--color-charcoal-light);
+        margin-top: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Breadcrumb -->
+    <div class="mb-3" style="max-width: 880px; margin: 0 auto;">
+        <a href="{{ url_for('prediction.index') }}" class="text-decoration-none text-muted small">
+            <i class="bi bi-arrow-left me-1"></i> Back to Assessment Hub
+        </a>
+    </div>
+
+    <div class="form-container-card">
+
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge" style="background: rgba(230, 81, 0, 0.12); color: #E65100; font-weight: 600;">
+                <i class="bi bi-droplet-half me-1"></i> Endocrine & Glycemic Module
+            </span>
+            <span class="text-muted small">• Random Forest + SHAP Architecture</span>
+        </div>
+
+        <h1 class="h3 fw-bold mb-2" style="font-family: var(--font-display); color: var(--color-forest);">
+            Type 2 Diabetes Risk Evaluation
+        </h1>
+        <p class="text-muted small mb-4">
+            Enter your current clinical biomarkers below. Values for BMI and Age have been pre-populated from your
+            authorized profile. Our supervised diagnostic model will estimate statistical risk and compute individual SHAP feature attributions.
+        </p>
+
+        <form method="POST" action="{{ url_for('prediction.assess_diabetes') }}" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Section 1: Glycemic & Metabolic Biomarkers -->
+            <div class="mb-4">
+                <div class="form-section-title">
+                    <i class="bi bi-activity text-warning"></i> 1. Glycemic & Metabolic Biomarkers
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">{{ form.glucose.label }}</label>
+                        {{ form.glucose(class="form-control" + (" is-invalid" if form.glucose.errors else ""), placeholder="e.g. 95") }}
+                        {% if form.glucose.errors %}
+                            <div class="invalid-feedback">{{ form.glucose.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">Reference: Normal <100 mg/dL, Prediabetes 100-125, Diabetes ≥126.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">{{ form.insulin.label }}</label>
+                        {{ form.insulin(class="form-control" + (" is-invalid" if form.insulin.errors else ""), placeholder="e.g. 75.0") }}
+                        {% if form.insulin.errors %}
+                            <div class="invalid-feedback">{{ form.insulin.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">Standard fasting/2-hr insulin: 16 - 166 mu U/ml.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">{{ form.bmi.label }}</label>
+                        {{ form.bmi(class="form-control" + (" is-invalid" if form.bmi.errors else ""), placeholder="e.g. 24.2") }}
+                        {% if form.bmi.errors %}
+                            <div class="invalid-feedback">{{ form.bmi.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">Asian Indian cutoff: Normal 18.5 - 22.9, Overweight ≥23.0, Obese ≥25.0.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">{{ form.skin_thickness.label }}</label>
+                        {{ form.skin_thickness(class="form-control" + (" is-invalid" if form.skin_thickness.errors else ""), placeholder="e.g. 22.0") }}
+                        {% if form.skin_thickness.errors %}
+                            <div class="invalid-feedback">{{ form.skin_thickness.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">Subcutaneous fat surrogate (average adult: 15 - 30 mm).</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Hemodynamic Biomarkers -->
+            <div class="mb-4">
+                <div class="form-section-title">
+                    <i class="bi bi-heart-pulse text-danger"></i> 2. Hemodynamics & Pressure
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">{{ form.blood_pressure.label }}</label>
+                        {{ form.blood_pressure(class="form-control" + (" is-invalid" if form.blood_pressure.errors else ""), placeholder="e.g. 75") }}
+                        {% if form.blood_pressure.errors %}
+                            <div class="invalid-feedback">{{ form.blood_pressure.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">Diastolic resting value: Normal 60 - 80 mm Hg.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Demographic & Familial Risk Factors -->
+            <div class="mb-4">
+                <div class="form-section-title">
+                    <i class="bi bi-people text-primary"></i> 3. Demographic & Genetic Predisposition
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">{{ form.age.label }}</label>
+                        {{ form.age(class="form-control" + (" is-invalid" if form.age.errors else ""), placeholder="e.g. 35") }}
+                        {% if form.age.errors %}
+                            <div class="invalid-feedback">{{ form.age.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">Patient chronologic age in years.</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">{{ form.pregnancies.label }}</label>
+                        {{ form.pregnancies(class="form-control" + (" is-invalid" if form.pregnancies.errors else ""), placeholder="0") }}
+                        {% if form.pregnancies.errors %}
+                            <div class="invalid-feedback">{{ form.pregnancies.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">Gestational history (0 for males/non-pregnant).</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">{{ form.diabetes_pedigree.label }}</label>
+                        {{ form.diabetes_pedigree(class="form-control" + (" is-invalid" if form.diabetes_pedigree.errors else ""), placeholder="0.45") }}
+                        {% if form.diabetes_pedigree.errors %}
+                            <div class="invalid-feedback">{{ form.diabetes_pedigree.errors[0] }}</div>
+                        {% endif %}
+                        <div class="form-hint">0.1-0.4: low family history, >0.8: strong history.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-forest btn-lg py-3 fw-bold rounded-pill shadow-sm">
+                    <i class="bi bi-cpu me-2"></i> Execute Machine Learning & SHAP Attribution
+                </button>
+            </div>
+        </form>
+
+        <!-- Clinical Safety Disclaimer -->
+        <div class="clinical-disclaimer-card">
+            <strong>CLINICAL DISCLAIMER:</strong> This predictive assessment generates statistical risk estimates based
+            on machine learning algorithms trained on peer-reviewed cohorts. It does not provide clinical diagnosis or treatment.
+            Always review results with a qualified healthcare professional.
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

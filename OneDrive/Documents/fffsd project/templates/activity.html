@@ -1,0 +1,1164 @@
+{% extends "base.html" %}
+
+{% block title %}Activity, Hydration & Circadian Health | AuraHealth AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Lifestyle Dashboard Custom Styling */
+    .activity-header {
+        background: linear-gradient(135deg, rgba(11, 41, 27, 0.04) 0%, rgba(16, 76, 53, 0.08) 100%);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 2rem 2.25rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .activity-header::after {
+        content: '';
+        position: absolute;
+        right: -60px;
+        top: -60px;
+        width: 220px;
+        height: 220px;
+        background: radial-gradient(circle, rgba(106, 142, 127, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .metric-card {
+        background: var(--color-card-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: 1.6rem;
+        box-shadow: var(--shadow-card);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .metric-icon-bubble {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+    }
+
+    .bubble-hydration {
+        background: rgba(33, 150, 243, 0.12);
+        color: #1976D2;
+    }
+
+    .bubble-steps {
+        background: rgba(16, 76, 53, 0.12);
+        color: var(--color-emerald);
+    }
+
+    .bubble-sleep {
+        background: rgba(103, 58, 183, 0.12);
+        color: #5E35B1;
+    }
+
+    .bubble-met {
+        background: rgba(230, 81, 0, 0.12);
+        color: #E65100;
+    }
+
+    .water-bottle-visual {
+        position: relative;
+        width: 100%;
+        height: 14px;
+        background: rgba(33, 150, 243, 0.12);
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 1rem 0 0.5rem;
+    }
+
+    .water-bottle-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #42A5F5, #1E88E5);
+        border-radius: 10px;
+        transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .quick-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.85rem;
+        border-radius: 50px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        border: 1px solid var(--color-border);
+        background: #fff;
+        color: var(--color-charcoal);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .quick-chip:hover {
+        border-color: var(--color-forest);
+        color: var(--color-forest);
+        background: var(--color-sage-light);
+        transform: translateY(-1px);
+    }
+
+    .quick-chip-blue:hover {
+        border-color: #1976D2;
+        color: #1976D2;
+        background: rgba(33, 150, 243, 0.08);
+    }
+
+    .workout-item {
+        background: #FDFDFD;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.2s ease;
+    }
+
+    .workout-item:hover {
+        background: #F8FAF9;
+        border-color: var(--color-sage);
+    }
+
+    .chart-container-card {
+        background: var(--color-card-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: 1.8rem;
+        box-shadow: var(--shadow-card);
+        margin-bottom: 2rem;
+    }
+
+    .nav-pills-custom .nav-link {
+        color: var(--color-charcoal-light);
+        font-weight: 600;
+        font-size: 0.88rem;
+        border-radius: 50px;
+        padding: 0.45rem 1.1rem;
+        transition: all 0.2s;
+    }
+
+    .nav-pills-custom .nav-link.active {
+        background: var(--color-forest);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(11, 41, 27, 0.2);
+    }
+
+    .water-log-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.4rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+    }
+
+    .water-log-item:hover {
+        background: rgba(33, 150, 243, 0.06);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Top Breadcrumb & Date Navigation Ribbon -->
+    <div class="activity-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge" style="background: var(--color-sage-light); color: var(--color-forest); font-weight: 600;">
+                    <i class="bi bi-activity me-1"></i> Lifestyle & Circadian Science
+                </span>
+                <span class="text-muted" style="font-size: 0.85rem;">• Compendium of Physical Activities (MET)</span>
+            </div>
+            <h1 class="h2 mb-1" style="font-family: var(--font-display); font-weight: 700; color: var(--color-forest);">
+                Physical Movement, Hydration & Sleep
+            </h1>
+            <p class="text-muted mb-0" style="font-size: 0.95rem;">
+                Continuous lifestyle tracking synchronized with clinical metabolic expenditure and recovery indexes.
+            </p>
+        </div>
+
+        <!-- Date Selector Ribbon -->
+        <div class="d-flex align-items-center gap-2 bg-white p-2 rounded-3 border shadow-sm">
+            <span class="text-muted ps-2" style="font-size: 0.85rem;"><i class="bi bi-calendar3 me-1"></i> Date:</span>
+            <input type="date" id="activityDatePicker" class="form-control form-control-sm border-0 fw-bold text-dark" 
+                   value="{{ selected_date }}" style="width: 145px; cursor: pointer;">
+            <button class="btn btn-sm btn-outline-forest rounded-pill px-3" onclick="goToSelectedDate()">
+                Load
+            </button>
+        </div>
+    </div>
+
+    <!-- 4 Primary Operational Metric Pods -->
+    <div class="row g-4 mb-4">
+
+        <!-- 1. Hydration Chamber -->
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card" id="cardHydration">
+                <div>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="metric-icon-bubble bubble-hydration">
+                            <i class="bi bi-droplet-half"></i>
+                        </div>
+                        <span class="badge rounded-pill bg-light text-primary border" style="font-size: 0.75rem;">
+                            Target: {{ summary.hydration.target_ml }} ml
+                        </span>
+                    </div>
+
+                    <h5 class="fw-bold mb-1 text-dark">Hydration Reservoir</h5>
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span class="display-6 fw-bold text-primary" id="waterConsumedDisplay">
+                            {{ summary.hydration.consumed_ml }}
+                        </span>
+                        <span class="text-muted" style="font-size: 0.9rem;">/ {{ summary.hydration.target_ml }} ml</span>
+                    </div>
+
+                    <div class="water-bottle-visual">
+                        <div class="water-bottle-fill" id="waterProgressBar" style="width: {{ summary.hydration.percent }}%;"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-between text-muted" style="font-size: 0.78rem;">
+                        <span id="waterPercentLabel">{{ summary.hydration.percent }}% Achieved</span>
+                        <span id="waterRemainingLabel">{{ summary.hydration.remaining_ml }} ml to target</span>
+                    </div>
+
+                    <hr class="my-3 opacity-10">
+
+                    <!-- Quick Hydration Buttons -->
+                    <div class="mb-2">
+                        <label class="form-label text-muted fw-semibold" style="font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Quick Hydrate
+                        </label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="quick-chip quick-chip-blue" onclick="quickLogWater(250)">
+                                <i class="bi bi-cup-hot text-primary"></i> +250ml
+                            </button>
+                            <button class="quick-chip quick-chip-blue" onclick="quickLogWater(500)">
+                                <i class="bi bi-water text-primary"></i> +500ml
+                            </button>
+                            <button class="quick-chip quick-chip-blue" onclick="openCustomWaterModal()">
+                                <i class="bi bi-plus-circle text-primary"></i> Custom
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hydration Logs Drawer Collapse Button -->
+                <div class="pt-2">
+                    <button class="btn btn-sm btn-link text-decoration-none text-muted p-0 w-100 text-start" 
+                            type="button" data-bs-toggle="collapse" data-bs-target="#waterLogsCollapse">
+                        <i class="bi bi-clock-history me-1"></i> Today's logs ({{ summary.hydration.logs|length }}) <i class="bi bi-chevron-down float-end"></i>
+                    </button>
+                    <div class="collapse mt-2" id="waterLogsCollapse">
+                        <div class="border rounded p-2 bg-light" style="max-height: 120px; overflow-y: auto;" id="waterLogsList">
+                            {% for log in summary.hydration.logs %}
+                                <div class="water-log-item" id="water-log-{{ log.id }}">
+                                    <span><i class="bi bi-droplet-fill text-primary me-1"></i> <strong>{{ log.amount_ml }} ml</strong></span>
+                                    <button class="btn btn-sm text-danger p-0" onclick="deleteWaterLog({{ log.id }})" title="Delete">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </div>
+                            {% else %}
+                                <p class="text-muted small mb-0 text-center py-1">No water logged yet today.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Step Movement & Kinematics -->
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card" id="cardSteps">
+                <div>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="metric-icon-bubble bubble-steps">
+                            <i class="bi bi-person-walking"></i>
+                        </div>
+                        <span class="badge rounded-pill bg-light text-success border" style="font-size: 0.75rem;">
+                            Target: {{ "{:,}".format(summary.steps.target) }}
+                        </span>
+                    </div>
+
+                    <h5 class="fw-bold mb-1 text-dark">Step Kinematics</h5>
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span class="display-6 fw-bold text-success" id="stepCountDisplay">
+                            {{ "{:,}".format(summary.steps.count) }}
+                        </span>
+                        <span class="text-muted" style="font-size: 0.9rem;">steps</span>
+                    </div>
+
+                    <div class="progress my-3" style="height: 10px; border-radius: 8px; background: rgba(16, 76, 53, 0.1);">
+                        <div class="progress-bar" id="stepProgressBar" role="progressbar" 
+                             style="width: {{ summary.steps.percent }}%; background: var(--color-emerald); border-radius: 8px;"></div>
+                    </div>
+
+                    <div class="row g-2 text-center my-1">
+                        <div class="col-6">
+                            <div class="p-2 rounded bg-light border">
+                                <span class="d-block text-muted" style="font-size: 0.75rem;">Distance</span>
+                                <strong class="text-dark" id="stepDistanceDisplay">{{ summary.steps.distance_km }} km</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded bg-light border">
+                                <span class="d-block text-muted" style="font-size: 0.75rem;">Active Burn</span>
+                                <strong class="text-dark" id="stepCalorieDisplay">{{ summary.calories_burned.total }} kcal</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-3 opacity-10">
+
+                    <!-- Quick Step Actions -->
+                    <div>
+                        <label class="form-label text-muted fw-semibold" style="font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Update Steps
+                        </label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="quick-chip" onclick="quickAddSteps(1000)">
+                                <i class="bi bi-plus-lg text-success"></i> +1k
+                            </button>
+                            <button class="quick-chip" onclick="quickAddSteps(2500)">
+                                <i class="bi bi-plus-lg text-success"></i> +2.5k
+                            </button>
+                            <button class="quick-chip" onclick="openStepModal()">
+                                <i class="bi bi-pencil text-success"></i> Set Exact
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 text-muted" style="font-size: 0.78rem;">
+                    <i class="bi bi-info-circle me-1"></i> Distance estimated via 0.78m average adult stride.
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Circadian Sleep Vault -->
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card" id="cardSleep">
+                <div>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="metric-icon-bubble bubble-sleep">
+                            <i class="bi bi-moon-stars"></i>
+                        </div>
+                        <span class="badge rounded-pill {{ summary.sleep.badge_class }}" style="font-size: 0.75rem;">
+                            {{ summary.sleep.status }}
+                        </span>
+                    </div>
+
+                    <h5 class="fw-bold mb-1 text-dark">Circadian Recovery</h5>
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span class="display-6 fw-bold" style="color: #5E35B1;" id="sleepHoursDisplay">
+                            {{ summary.sleep.hours }}
+                        </span>
+                        <span class="text-muted" style="font-size: 0.9rem;">/ 8.0 hrs</span>
+                    </div>
+
+                    <div class="progress my-3" style="height: 10px; border-radius: 8px; background: rgba(103, 58, 183, 0.1);">
+                        <div class="progress-bar" id="sleepProgressBar" role="progressbar" 
+                             style="width: {{ summary.sleep.percent }}%; background: #5E35B1; border-radius: 8px;"></div>
+                    </div>
+
+                    <div class="p-2 rounded border bg-light mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted" style="font-size: 0.78rem;">Quality Score</span>
+                            <span class="fw-bold text-dark" id="sleepQualityDisplay">{{ summary.sleep.quality_score }} / 100</span>
+                        </div>
+                        <p class="text-muted mb-0" style="font-size: 0.77rem; line-height: 1.3;" id="sleepAdviceDisplay">
+                            {{ summary.sleep.advice }}
+                        </p>
+                    </div>
+
+                    <hr class="my-3 opacity-10">
+
+                    <div>
+                        <label class="form-label text-muted fw-semibold" style="font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Circadian Logging
+                        </label>
+                        <div>
+                            <button class="btn btn-outline-forest btn-sm w-100 rounded-pill" onclick="openSleepModal()">
+                                <i class="bi bi-moon-stars-fill me-1"></i> Log / Update Last Night's Rest
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 text-muted" style="font-size: 0.78rem;">
+                    <i class="bi bi-shield-check me-1"></i> Restorative delta sleep balances insulin & leptin.
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Active Metabolic Burn (MET Engine) -->
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card" id="cardMetabolic">
+                <div>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="metric-icon-bubble bubble-met">
+                            <i class="bi bi-fire"></i>
+                        </div>
+                        <span class="badge rounded-pill bg-light text-warning-emphasis border" style="font-size: 0.75rem;">
+                            MET Standard
+                        </span>
+                    </div>
+
+                    <h5 class="fw-bold mb-1 text-dark">Active Caloric Burn</h5>
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span class="display-6 fw-bold text-danger" id="totalCaloriesBurnedDisplay">
+                            {{ summary.calories_burned.total }}
+                        </span>
+                        <span class="text-muted" style="font-size: 0.9rem;">kcal burned</span>
+                    </div>
+
+                    <div class="p-2 rounded border bg-light my-3">
+                        <div class="d-flex justify-content-between align-items-center" style="font-size: 0.8rem;">
+                            <span class="text-muted"><i class="bi bi-stopwatch me-1"></i> Exercise Sessions:</span>
+                            <strong class="text-dark">{{ summary.calories_burned.total_exercise_minutes }} mins</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-1" style="font-size: 0.8rem;">
+                            <span class="text-muted"><i class="bi bi-lightning-charge me-1"></i> Workout Burn:</span>
+                            <strong class="text-danger">{{ summary.calories_burned.from_exercise }} kcal</strong>
+                        </div>
+                    </div>
+
+                    <hr class="my-3 opacity-10">
+
+                    <div>
+                        <label class="form-label text-muted fw-semibold" style="font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                            MET Workout Engine
+                        </label>
+                        <div>
+                            <button class="btn btn-forest btn-sm w-100 rounded-pill shadow-sm" onclick="openExerciseModal()">
+                                <i class="bi bi-plus-circle me-1"></i> Log Structured Workout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 text-muted" style="font-size: 0.78rem;">
+                    <i class="bi bi-cpu me-1"></i> Weighted to your {{ user_weight }} kg clinical profile.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Middle Section: Today's Workouts List & Compendium of MET Activities -->
+    <div class="row g-4 mb-4">
+        
+        <!-- Workouts Recorded Today -->
+        <div class="col-lg-7">
+            <div class="chart-container-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h4 class="h5 mb-0 fw-bold" style="color: var(--color-forest);">
+                            <i class="bi bi-trophy me-2"></i> Today's Structured Exercise Log
+                        </h4>
+                        <span class="text-muted small">Recorded sessions dynamically scaled via Ainsworth's MET formulation.</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-forest rounded-pill" onclick="openExerciseModal()">
+                        <i class="bi bi-plus"></i> Add Session
+                    </button>
+                </div>
+
+                <div id="exerciseListContainer">
+                    {% for ex in summary.exercises %}
+                        <div class="workout-item" id="exercise-item-{{ ex.id }}">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="metric-icon-bubble bubble-met mb-0" style="width: 40px; height: 40px; font-size: 1.1rem;">
+                                    <i class="bi {{ ex.icon }}"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-dark">{{ ex.name }}</h6>
+                                    <span class="badge bg-light text-muted border me-1" style="font-size: 0.72rem;">{{ ex.category }}</span>
+                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i>{{ ex.duration_minutes }} minutes • Logged at {{ ex.logged_at }}</span>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 fw-bold" style="font-size: 0.85rem;">
+                                    -{{ ex.calories_burned }} kcal
+                                </span>
+                                <button class="btn btn-sm text-danger p-1" onclick="deleteExercise({{ ex.id }})" title="Remove session">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 border border-dashed rounded-3 bg-light">
+                            <i class="bi bi-heart-pulse display-5 text-muted opacity-50 mb-2"></i>
+                            <p class="text-muted mb-2">No structured workouts recorded for this date yet.</p>
+                            <button class="btn btn-sm btn-forest rounded-pill px-3" onclick="openExerciseModal()">
+                                Record First Workout
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- MET Scientific Reference Card -->
+        <div class="col-lg-5">
+            <div class="chart-container-card h-100">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge" style="background: rgba(16, 76, 53, 0.1); color: var(--color-forest);">
+                        Peer-Reviewed Standard
+                    </span>
+                    <span class="text-muted small">Compendium of Physical Activities</span>
+                </div>
+                <h4 class="h5 fw-bold mb-2" style="color: var(--color-forest);">
+                    Scientific MET Formulations
+                </h4>
+                <p class="text-muted small mb-3">
+                    One Metabolic Equivalent of Task (MET) represents the resting oxygen uptake ($\approx 3.5\text{ ml O}_2/\text{kg/min}$). Total active energy expenditure is calculated as:
+                </p>
+
+                <div class="p-3 rounded-3 mb-3" style="background: #0B291B; color: #E8EFEA; font-family: var(--font-mono); font-size: 0.85rem;">
+                    $$\text{Burn (kcal)} = t_{\text{min}} \times \left(\text{MET} \times 3.5 \times \frac{M_{\text{kg}}}{200}\right)$$
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-borderless align-middle mb-0" style="font-size: 0.82rem;">
+                        <thead>
+                            <tr class="text-muted border-bottom">
+                                <th>Activity</th>
+                                <th>Intensity</th>
+                                <th class="text-end">MET Factor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><i class="bi bi-person-walking text-success me-1"></i> Brisk Walking</td>
+                                <td>6.0 km/h</td>
+                                <td class="text-end fw-bold">4.5</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-lightning-charge text-warning me-1"></i> Jogging</td>
+                                <td>8.0 km/h</td>
+                                <td class="text-end fw-bold">8.0</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-bicycle text-primary me-1"></i> Moderate Cycling</td>
+                                <td>16–19 km/h</td>
+                                <td class="text-end fw-bold">6.0</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-shield-shaded text-danger me-1"></i> Strength Training</td>
+                                <td>Resistance</td>
+                                <td class="text-end fw-bold">5.0</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-fire text-danger me-1"></i> HIIT / Functional</td>
+                                <td>Vigorous</td>
+                                <td class="text-end fw-bold">8.5</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Section: 7-Day Lifestyle Trajectory Analytics (Chart.js) -->
+    <div class="chart-container-card">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+            <div>
+                <h4 class="h5 fw-bold mb-1" style="color: var(--color-forest);">
+                    <i class="bi bi-graph-up me-2"></i> 7-Day Chronological Lifestyle Trajectory
+                </h4>
+                <p class="text-muted small mb-0">Multimodal longitudinal view correlating hydration, circadian sleep, and active movement.</p>
+            </div>
+
+            <!-- Tab Pills to Toggle Chart View -->
+            <ul class="nav nav-pills nav-pills-custom" id="lifestyleChartTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" onclick="switchChartMetric('steps')">
+                        <i class="bi bi-person-walking me-1"></i> Steps
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" onclick="switchChartMetric('water')">
+                        <i class="bi bi-droplet me-1"></i> Hydration
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" onclick="switchChartMetric('sleep')">
+                        <i class="bi bi-moon me-1"></i> Sleep
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" onclick="switchChartMetric('calories')">
+                        <i class="bi bi-fire me-1"></i> Active Burn
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div style="height: 320px; position: relative;">
+            <canvas id="lifestyleTrendCanvas"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODALS FOR LOGGING ACTIONS -->
+<!-- ========================================================================= -->
+
+<!-- 1. Log / Set Steps Modal -->
+<div class="modal fade" id="modalSteps" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-md);">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" style="color: var(--color-forest);">
+                    <i class="bi bi-person-walking me-2"></i> Update Daily Step Count
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-muted" style="font-size: 0.85rem;">Mode</label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="stepMode" id="stepModeSet" value="set" checked>
+                        <label class="btn btn-outline-forest" for="stepModeSet">Set Total Steps</label>
+                        <input type="radio" class="btn-check" name="stepMode" id="stepModeAdd" value="add">
+                        <label class="btn btn-outline-forest" for="stepModeAdd">Add to Existing</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-muted" style="font-size: 0.85rem;">Step Count</label>
+                    <input type="number" id="inputStepsCount" class="form-control form-control-lg text-center fw-bold" 
+                           placeholder="e.g. 8500" min="0" max="100000" value="{{ summary.steps.count }}">
+                </div>
+                <div class="text-muted small">
+                    <i class="bi bi-info-circle me-1"></i> Distance and calorie burn will be recalculated dynamically.
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-forest rounded-pill px-4" onclick="submitStepLog()">Save Steps</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Custom Water Modal -->
+<div class="modal fade" id="modalCustomWater" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-md);">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-primary">
+                    <i class="bi bi-droplet-half me-2"></i> Record Hydration
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label fw-semibold text-muted" style="font-size: 0.85rem;">Amount in Milliliters (ml)</label>
+                <div class="input-group">
+                    <input type="number" id="inputCustomWater" class="form-control text-center fw-bold fs-4" 
+                           placeholder="350" min="10" max="3000" step="10">
+                    <span class="input-group-text">ml</span>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="submitCustomWater()">Log Intake</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Sleep Logger Modal -->
+<div class="modal fade" id="modalSleep" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-md);">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" style="color: #5E35B1;">
+                    <i class="bi bi-moon-stars me-2"></i> Circadian Sleep Architecture
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label d-flex justify-content-between fw-semibold text-muted" style="font-size: 0.85rem;">
+                        <span>Sleep Duration (Hours)</span>
+                        <strong class="text-dark" id="sleepHoursSliderLabel">{{ summary.sleep.hours }} hrs</strong>
+                    </label>
+                    <input type="range" class="form-range" id="inputSleepHours" min="3.0" max="14.0" step="0.5" 
+                           value="{{ summary.sleep.hours if summary.sleep.hours > 0 else 7.5 }}" 
+                           oninput="document.getElementById('sleepHoursSliderLabel').innerText = this.value + ' hrs'">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label d-flex justify-content-between fw-semibold text-muted" style="font-size: 0.85rem;">
+                        <span>Perceived Sleep Quality Index</span>
+                        <strong class="text-dark" id="sleepQualitySliderLabel">{{ summary.sleep.quality_score if summary.sleep.quality_score > 0 else 80 }} / 100</strong>
+                    </label>
+                    <input type="range" class="form-range" id="inputSleepQuality" min="20" max="100" step="5" 
+                           value="{{ summary.sleep.quality_score if summary.sleep.quality_score > 0 else 80 }}" 
+                           oninput="document.getElementById('sleepQualitySliderLabel').innerText = this.value + ' / 100'">
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-forest rounded-pill px-4" onclick="submitSleepLog()">Save Sleep Data</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 4. Structured MET Workout Modal -->
+<div class="modal fade" id="modalExercise" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-md);">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" style="color: var(--color-forest);">
+                    <i class="bi bi-fire text-danger me-2"></i> Log Structured MET Workout
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-muted" style="font-size: 0.85rem;">Select Activity</label>
+                    <select id="selectExerciseType" class="form-select" onchange="updateMetPreview()">
+                        {% for key, val in met_activities.items() %}
+                            <option value="{{ key }}" data-met="{{ val.met }}">
+                                {{ val.name }} ({{ val.met }} MET) • {{ val.category }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label d-flex justify-content-between fw-semibold text-muted" style="font-size: 0.85rem;">
+                        <span>Session Duration</span>
+                        <strong class="text-dark" id="exerciseDurationLabel">30 minutes</strong>
+                    </label>
+                    <input type="range" class="form-range" id="inputExerciseDuration" min="5" max="180" step="5" value="30" 
+                           oninput="document.getElementById('exerciseDurationLabel').innerText = this.value + ' minutes'; updateMetPreview();">
+                </div>
+
+                <!-- Real-Time MET Calorie Computation Preview Card -->
+                <div class="p-3 rounded-3 border bg-light text-center">
+                    <span class="text-muted d-block small mb-1">Estimated Energy Expenditure:</span>
+                    <span class="display-6 fw-bold text-danger" id="metPreviewCalorie">--</span>
+                    <span class="text-muted small d-block mt-1">
+                        Based on {{ user_weight }} kg body mass at Ainsworth formulation
+                    </span>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4" onclick="submitExerciseLog()">
+                    <i class="bi bi-check2-circle me-1"></i> Confirm & Log
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    // Global State & Data passed from Flask
+    const SELECTED_DATE = "{{ selected_date }}";
+    const USER_WEIGHT = {{ user_weight }};
+    const CSRF_TOKEN = "{{ csrf_token() if csrf_token is defined else '' }}";
+    const TREND_DATA = {{ weekly_trends | tojson }};
+
+    let lifestyleChart = null;
+    let currentMetric = 'steps';
+
+    // Headers helper for CSRF JSON fetch
+    function getJsonHeaders() {
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        if (csrfMeta) {
+            headers['X-CSRFToken'] = csrfMeta.getAttribute('content');
+        } else if (CSRF_TOKEN) {
+            headers['X-CSRFToken'] = CSRF_TOKEN;
+        }
+        return headers;
+    }
+
+    // =========================================================================
+    // Date Navigation
+    // =========================================================================
+    function goToSelectedDate() {
+        const dateVal = document.getElementById('activityDatePicker').value;
+        if (dateVal) {
+            window.location.href = `/activity?date=${encodeURIComponent(dateVal)}`;
+        }
+    }
+
+    // =========================================================================
+    // Hydration Actions
+    // =========================================================================
+    async function quickLogWater(amountMl) {
+        try {
+            const res = await fetch('/api/v1/activity/water', {
+                method: 'POST',
+                headers: getJsonHeaders(),
+                body: JSON.stringify({ amount_ml: amountMl, date: SELECTED_DATE })
+            });
+            const data = await res.json();
+            if (data.success) {
+                updateHydrationUI(data.hydration, data.entry);
+            } else {
+                alert(data.error || 'Failed to log water');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Communication error logging water.');
+        }
+    }
+
+    function openCustomWaterModal() {
+        const modal = new bootstrap.Modal(document.getElementById('modalCustomWater'));
+        modal.show();
+    }
+
+    async function submitCustomWater() {
+        const input = document.getElementById('inputCustomWater');
+        const amount = parseInt(input.value);
+        if (!amount || amount <= 0) {
+            alert('Please enter a valid milliliter volume.');
+            return;
+        }
+        await quickLogWater(amount);
+        bootstrap.Modal.getInstance(document.getElementById('modalCustomWater')).hide();
+        input.value = '';
+    }
+
+    async function deleteWaterLog(logId) {
+        if (!confirm('Remove this hydration entry?')) return;
+        try {
+            const res = await fetch(`/api/v1/activity/water/${logId}`, {
+                method: 'DELETE',
+                headers: getJsonHeaders()
+            });
+            const data = await res.json();
+            if (data.success) {
+                const row = document.getElementById(`water-log-${logId}`);
+                if (row) row.remove();
+                updateHydrationUI(data.hydration);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function updateHydrationUI(hydration, newEntry = null) {
+        document.getElementById('waterConsumedDisplay').innerText = hydration.consumed_ml;
+        document.getElementById('waterProgressBar').style.width = `${hydration.percent}%`;
+        document.getElementById('waterPercentLabel').innerText = `${hydration.percent}% Achieved`;
+        document.getElementById('waterRemainingLabel').innerText = `${hydration.remaining_ml} ml to target`;
+
+        if (newEntry) {
+            const list = document.getElementById('waterLogsList');
+            const placeholder = list.querySelector('p');
+            if (placeholder) placeholder.remove();
+
+            const item = document.createElement('div');
+            item.className = 'water-log-item';
+            item.id = `water-log-${newEntry.id}`;
+            item.innerHTML = `
+                <span><i class="bi bi-droplet-fill text-primary me-1"></i> <strong>${newEntry.amount_ml} ml</strong></span>
+                <button class="btn btn-sm text-danger p-0" onclick="deleteWaterLog(${newEntry.id})" title="Delete">
+                    <i class="bi bi-x-circle"></i>
+                </button>
+            `;
+            list.prepend(item);
+        }
+    }
+
+    // =========================================================================
+    // Step Kinematics Actions
+    // =========================================================================
+    function openStepModal() {
+        const modal = new bootstrap.Modal(document.getElementById('modalSteps'));
+        modal.show();
+    }
+
+    async function quickAddSteps(steps) {
+        await postSteps(steps, 'add');
+    }
+
+    async function submitStepLog() {
+        const steps = parseInt(document.getElementById('inputStepsCount').value);
+        const mode = document.querySelector('input[name="stepMode"]:checked').value;
+        if (isNaN(steps) || steps < 0) {
+            alert('Please enter a valid step count.');
+            return;
+        }
+        await postSteps(steps, mode);
+        bootstrap.Modal.getInstance(document.getElementById('modalSteps')).hide();
+    }
+
+    async function postSteps(steps, mode) {
+        try {
+            const res = await fetch('/api/v1/activity/steps', {
+                method: 'POST',
+                headers: getJsonHeaders(),
+                body: JSON.stringify({ steps: steps, mode: mode, date: SELECTED_DATE })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('stepCountDisplay').innerText = data.summary.count.toLocaleString();
+                document.getElementById('stepProgressBar').style.width = `${data.summary.percent}%`;
+                document.getElementById('stepDistanceDisplay').innerText = `${data.summary.distance_km} km`;
+                document.getElementById('stepCalorieDisplay').innerText = `${data.calories_burned.total} kcal`;
+                document.getElementById('totalCaloriesBurnedDisplay').innerText = data.calories_burned.total;
+            } else {
+                alert(data.error || 'Failed to update steps.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Communication error updating steps.');
+        }
+    }
+
+    // =========================================================================
+    // Sleep Logging Actions
+    // =========================================================================
+    function openSleepModal() {
+        const modal = new bootstrap.Modal(document.getElementById('modalSleep'));
+        modal.show();
+    }
+
+    async function submitSleepLog() {
+        const hours = parseFloat(document.getElementById('inputSleepHours').value);
+        const quality = parseInt(document.getElementById('inputSleepQuality').value);
+
+        try {
+            const res = await fetch('/api/v1/activity/sleep', {
+                method: 'POST',
+                headers: getJsonHeaders(),
+                body: JSON.stringify({ sleep_hours: hours, quality_score: quality, date: SELECTED_DATE })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('sleepHoursDisplay').innerText = data.sleep.hours;
+                document.getElementById('sleepProgressBar').style.width = `${data.sleep.percent}%`;
+                document.getElementById('sleepQualityDisplay').innerText = `${data.sleep.quality_score} / 100`;
+                document.getElementById('sleepAdviceDisplay').innerText = data.sleep.advice;
+                bootstrap.Modal.getInstance(document.getElementById('modalSleep')).hide();
+            } else {
+                alert(data.error || 'Failed to record sleep.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Communication error recording sleep.');
+        }
+    }
+
+    // =========================================================================
+    // MET Workout Actions
+    // =========================================================================
+    function openExerciseModal() {
+        updateMetPreview();
+        const modal = new bootstrap.Modal(document.getElementById('modalExercise'));
+        modal.show();
+    }
+
+    function updateMetPreview() {
+        const select = document.getElementById('selectExerciseType');
+        const selectedOption = select.options[select.selectedIndex];
+        const met = parseFloat(selectedOption.getAttribute('data-met') || '3.5');
+        const duration = parseInt(document.getElementById('inputExerciseDuration').value || '30');
+
+        // Ainsworth calculation: kcal = min * [MET * 3.5 * weight / 200]
+        const kcal = Math.round((duration * (met * 3.5 * USER_WEIGHT / 200.0)) * 10) / 10;
+        document.getElementById('metPreviewCalorie').innerText = `${kcal} kcal`;
+    }
+
+    async function submitExerciseLog() {
+        const select = document.getElementById('selectExerciseType');
+        const exerciseType = select.value;
+        const duration = parseInt(document.getElementById('inputExerciseDuration').value);
+
+        try {
+            const res = await fetch('/api/v1/activity/exercise', {
+                method: 'POST',
+                headers: getJsonHeaders(),
+                body: JSON.stringify({
+                    exercise_type: exerciseType,
+                    duration_minutes: duration,
+                    date: SELECTED_DATE
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('modalExercise')).hide();
+                window.location.reload(); // Refresh to render the full session list with server formatting
+            } else {
+                alert(data.error || 'Failed to log exercise.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Communication error logging workout.');
+        }
+    }
+
+    async function deleteExercise(exerciseId) {
+        if (!confirm('Delete this exercise session?')) return;
+        try {
+            const res = await fetch(`/api/v1/activity/exercise/${exerciseId}`, {
+                method: 'DELETE',
+                headers: getJsonHeaders()
+            });
+            const data = await res.json();
+            if (data.success) {
+                const el = document.getElementById(`exercise-item-${exerciseId}`);
+                if (el) el.remove();
+                document.getElementById('totalCaloriesBurnedDisplay').innerText = data.calories_burned.total;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // =========================================================================
+    // Chart.js 7-Day Lifestyle Trajectory
+    // =========================================================================
+    function initChart() {
+        const ctx = document.getElementById('lifestyleTrendCanvas').getContext('2d');
+
+        const datasetsConfig = {
+            steps: {
+                label: 'Step Count',
+                data: TREND_DATA.steps,
+                borderColor: '#104C35',
+                backgroundColor: 'rgba(16, 76, 53, 0.12)',
+                yAxisLabel: 'Steps',
+                target: 10000
+            },
+            water: {
+                label: 'Water Intake (ml)',
+                data: TREND_DATA.water_ml,
+                borderColor: '#1E88E5',
+                backgroundColor: 'rgba(30, 136, 229, 0.12)',
+                yAxisLabel: 'Milliliters (ml)',
+                target: 3000
+            },
+            sleep: {
+                label: 'Sleep Duration (hrs)',
+                data: TREND_DATA.sleep_hours,
+                borderColor: '#5E35B1',
+                backgroundColor: 'rgba(94, 53, 177, 0.12)',
+                yAxisLabel: 'Hours',
+                target: 8.0
+            },
+            calories: {
+                label: 'Active Calories Burned (kcal)',
+                data: TREND_DATA.active_calories,
+                borderColor: '#E65100',
+                backgroundColor: 'rgba(230, 81, 0, 0.12)',
+                yAxisLabel: 'kcal Burned',
+                target: 500
+            }
+        };
+
+        const activeConfig = datasetsConfig[currentMetric];
+
+        lifestyleChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: TREND_DATA.labels,
+                datasets: [{
+                    label: activeConfig.label,
+                    data: activeConfig.data,
+                    borderColor: activeConfig.borderColor,
+                    backgroundColor: activeConfig.backgroundColor,
+                    borderWidth: 2.5,
+                    pointBackgroundColor: activeConfig.borderColor,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0.35,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#0B291B',
+                        titleFont: { family: 'Plus Jakarta Sans', weight: 'bold' },
+                        bodyFont: { family: 'Plus Jakarta Sans' },
+                        padding: 10,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Plus Jakarta Sans', size: 11 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        title: {
+                            display: true,
+                            text: activeConfig.yAxisLabel,
+                            font: { family: 'Plus Jakarta Sans', size: 12, weight: '600' }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function switchChartMetric(metric) {
+        currentMetric = metric;
+        
+        // Update nav-pills active state
+        document.querySelectorAll('#lifestyleChartTabs .nav-link').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.closest('.nav-link').classList.add('active');
+
+        if (lifestyleChart) {
+            lifestyleChart.destroy();
+        }
+        initChart();
+    }
+
+    // Initialize on DOM load
+    document.addEventListener('DOMContentLoaded', () => {
+        initChart();
+    });
+</script>
+{% endblock %}

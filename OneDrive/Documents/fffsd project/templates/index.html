@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+
+{% block title %}AuraHealth AI - Preventive Healthcare & Regional Nutrition Platform{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- ==========================================================================
+     1. SIGNATURE HERO SECTION: Interactive 3D DNA & Fluid Ink Simulation
+     ========================================================================== -->
+<section class="hero-wrapper photo-trail-zone" id="hero">
+    <!-- WebGL Canvas for Three.js 3D DNA Helix & Procedural Fluid Ink Plumes -->
+    <canvas id="hero-webgl-canvas"></canvas>
+
+    <div class="container hero-content-layer py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-7 col-xl-6">
+                
+                <!-- Clinical Innovation Badge -->
+                <div class="d-inline-flex align-items-center gap-2 mb-3 px-3 py-2 rounded-pill bg-white border border-success border-opacity-25 shadow-sm interactive">
+                    <span class="badge bg-success rounded-pill px-2 py-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">RESEARCH GROUNDED</span>
+                    <span class="small fw-semibold text-forest">Extending FR-RANC (IEEE Access 2025)</span>
+                </div>
+
+                <!-- Primary Editorial Headline -->
+                <h1 class="hero-headline font-display">
+                    Your Health.<br>
+                    Your Data.<br>
+                    <em>Your Future.</em>
+                </h1>
+
+                <!-- Subtitle -->
+                <p class="hero-subtitle">
+                    An intelligent preventive healthcare platform that transforms your daily Indian regional nutrition, sleep, hydration, and lifestyle metrics into personalized, explainable wellness decisions.
+                </p>
+
+                <!-- Action Controls -->
+                <div class="d-flex flex-wrap align-items-center gap-3 mb-5 interactive">
+                    {% if current_user.is_authenticated %}
+                        <a href="/dashboard" class="btn btn-forest px-4 py-3 fs-6">
+                            <i class="bi bi-grid-1x2-fill me-2"></i> Launch Dashboard
+                        </a>
+                        <a href="#services" class="btn btn-outline-forest px-4 py-3 fs-6">
+                            Explore System
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-forest px-4 py-3 fs-6">
+                            <i class="bi bi-person-plus-fill me-2"></i> Get Started Free
+                        </a>
+                        <a href="#services" class="btn btn-outline-forest px-4 py-3 fs-6">
+                            Explore Features
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Metric Badges Row -->
+                <div class="row g-3 interactive">
+                    <div class="col-sm-4 col-6">
+                        <div class="hero-stat-badge">
+                            <div class="h4 fw-bold mb-0 text-forest font-display">150+</div>
+                            <div class="small text-muted">Regional Indian Foods</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-6">
+                        <div class="hero-stat-badge">
+                            <div class="h4 fw-bold mb-0 text-emerald font-display">Dual ML</div>
+                            <div class="small text-muted">Risk Assessment Models</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-12">
+                        <div class="hero-stat-badge">
+                            <div class="h4 fw-bold mb-0 text-forest font-display">SHAP XAI</div>
+                            <div class="small text-muted">Explainable Attribution</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================================================
+     2. INTRODUCTION TO THE PREVENTIVE PARADIGM
+     ========================================================================== -->
+<section class="story-section bg-light-organic photo-trail-zone" id="introduction">
+    <div class="container">
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-lg-8">
+                <span class="pill-badge pill-badge-emerald mb-2">THE PREVENTIVE PARADIGM</span>
+                <h2 class="display-6 fw-bold mb-3">Healthcare Reimagined: From Reaction to Prevention</h2>
+                <p class="text-muted lead fs-6">
+                    Conventional healthcare websites provide static articles after chronic illness has developed. AuraHealth AI provides continuous, multi-modal feedback loops that intercept metabolic vulnerabilities before clinical diagnosis.
+                </p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="showcase-card text-center p-4">
+                    <div class="brand-icon-pill mx-auto mb-3" style="width: 54px; height: 54px; font-size: 1.5rem;">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </div>
+                    <h4 class="fw-bold h5 mb-2">Continuous Monitoring</h4>
+                    <p class="small text-muted mb-0">
+                        Tracks meals, daily steps, water intake, and circadian sleep duration. Recommendations dynamically update with every meal logged.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="showcase-card text-center p-4">
+                    <div class="brand-icon-pill mx-auto mb-3" style="width: 54px; height: 54px; font-size: 1.5rem;">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <h4 class="fw-bold h5 mb-2">Culturally Grounded</h4>
+                    <p class="small text-muted mb-0">
+                        Formulated specifically for Indian culinary patterns: South Indian dosas, idlis, ragi mudde, sambars, and regional grains mapped to ICMR-NIN nutritional composition tables.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="showcase-card text-center p-4">
+                    <div class="brand-icon-pill mx-auto mb-3" style="width: 54px; height: 54px; font-size: 1.5rem;">
+                        <i class="bi bi-cpu-fill"></i>
+                    </div>
+                    <h4 class="fw-bold h5 mb-2">Explainable AI & RAG</h4>
+                    <p class="small text-muted mb-0">
+                        Machine learning risk predictions with SHAP attribution charts alongside a context-aware Generative AI assistant grounded in peer-reviewed clinical knowledge.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================================================
+     3. SCROLL-DRIVEN HORIZONTAL SERVICES RAIL (GSAP ScrollTrigger)
+     ========================================================================== -->
+<section class="services-rail-viewport" id="services">
+    <div class="container mb-4">
+        <div class="services-rail-header">
+            <span class="badge bg-white bg-opacity-10 text-white border border-white border-opacity-25 px-3 py-1 rounded-pill mb-2">
+                MODULAR CAPABILITIES
+            </span>
+            <h2 class="display-6 fw-bold mb-1">Architected for Holistic Preventive Wellness</h2>
+            <p class="text-white-50 small mb-0">Scroll vertically to inspect the interconnected clinical modules.</p>
+        </div>
+    </div>
+
+    <!-- Pinned Horizontal Translation Track -->
+    <div class="services-rail-track">
+        
+        <!-- Service Card 1 -->
+        <div class="service-card">
+            <div class="service-card-number">MODULE 01</div>
+            <div class="service-card-icon"><i class="bi bi-pie-chart-fill"></i></div>
+            <h3>Smart Food & Nutrition Tracking</h3>
+            <p class="small">
+                Search, portion, and log breakfast, lunch, snacks, and dinner. Instant automatic calculations of calories, proteins, carbohydrates, fats, and fiber using exact gram multipliers.
+            </p>
+            <div class="mt-4 pt-3 border-top border-white border-opacity-10 small text-white-50">
+                <i class="bi bi-check2-circle text-success me-1"></i> ICMR-NIN IFCT Verified Database
+            </div>
+        </div>
+
+        <!-- Service Card 2 -->
+        <div class="service-card">
+            <div class="service-card-number">MODULE 02</div>
+            <div class="service-card-icon"><i class="bi bi-magic"></i></div>
+            <h3>Real-Time Deficit-Filling Engine</h3>
+            <p class="small">
+                Unlike one-time recommendation systems, our engine evaluates your remaining daily nutritional gap and suggests culturally compatible meals that balance your macro goals.
+            </p>
+            <div class="mt-4 pt-3 border-top border-white border-opacity-10 small text-white-50">
+                <i class="bi bi-shield-check text-success me-1"></i> Strict Allergy Suppression
+            </div>
+        </div>
+
+        <!-- Service Card 3 -->
+        <div class="service-card">
+            <div class="service-card-number">MODULE 03</div>
+            <div class="service-card-icon"><i class="bi bi-heart-pulse-fill"></i></div>
+            <h3>ML Health Risk Assessment</h3>
+            <p class="small">
+                Supervised Scikit-Learn pipelines trained on clinical epidemiological datasets (Pima Diabetes & UCI Heart) providing educational risk probabilities for metabolic and cardiovascular conditions.
+            </p>
+            <div class="mt-4 pt-3 border-top border-white border-opacity-10 small text-white-50">
+                <i class="bi bi-diagram-3-fill text-success me-1"></i> SHAP Local Attribution
+            </div>
+        </div>
+
+        <!-- Service Card 4 -->
+        <div class="service-card">
+            <div class="service-card-number">MODULE 04</div>
+            <div class="service-card-icon"><i class="bi bi-chat-quote-fill"></i></div>
+            <h3>Context-Aware AI Assistant</h3>
+            <p class="small">
+                Integrated with Google Gemini and grounded with Retrieval-Augmented Generation (RAG). Accesses your anonymized profile metrics to answer nutritional and lifestyle questions safely.
+            </p>
+            <div class="mt-4 pt-3 border-top border-white border-opacity-10 small text-white-50">
+                <i class="bi bi-shield-fill-check text-success me-1"></i> Hallucination Guardrails
+            </div>
+        </div>
+
+        <!-- Service Card 5 -->
+        <div class="service-card">
+            <div class="service-card-number">MODULE 05</div>
+            <div class="service-card-icon"><i class="bi bi-activity"></i></div>
+            <h3>Activity & Lifestyle Tracking</h3>
+            <p class="small">
+                Integrated logging for daily steps, MET-based workout calorie expenditure, hydration tracking against weight-based targets, and nocturnal sleep quality analysis.
+            </p>
+            <div class="mt-4 pt-3 border-top border-white border-opacity-10 small text-white-50">
+                <i class="bi bi-moon-stars text-success me-1"></i> Circadian Rhythm Analytics
+            </div>
+        </div>
+
+        <!-- Service Card 6 -->
+        <div class="service-card">
+            <div class="service-card-number">MODULE 06</div>
+            <div class="service-card-icon"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+            <h3>Clinical Progress Reports</h3>
+            <p class="small">
+                Automated weekly and monthly health trajectory reports. Summarizes caloric balance, macronutrient adherence, and lifestyle consistency in downloadable, professional PDF documents.
+            </p>
+            <div class="mt-4 pt-3 border-top border-white border-opacity-10 small text-white-50">
+                <i class="bi bi-printer text-success me-1"></i> Downloadable PDF Format
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ==========================================================================
+     4. WHY PREVENTIVE HEALTHCARE MATTERS
+     ========================================================================== -->
+<section class="story-section bg-white-clean" id="why-preventive">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="pill-badge pill-badge-olive mb-3">CLINICAL MOTIVATION</span>
+                <h2 class="display-6 fw-bold mb-3">The South Asian Cardiometabolic Challenge</h2>
+                <p class="text-muted mb-4 lead fs-6">
+                    Epidemiological studies confirm that South Asian populations face an elevated risk of Type-2 Diabetes and premature cardiovascular illness at lower BMI thresholds due to higher visceral adiposity and carbohydrate-heavy diets.
+                </p>
+
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex align-items-start gap-3 p-3 bg-light rounded-3">
+                        <div class="text-emerald fs-4"><i class="bi bi-graph-down-arrow"></i></div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Blunting Postprandial Glucose Spikes</h6>
+                            <p class="small text-muted mb-0">
+                                Replacing refined polished rice with finger millet (Ragi) or sorghum (Jowar) reduces the Glycemic Index of meals from &gt;70 to &lt;55, mitigating pancreatic beta-cell exhaustion.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start gap-3 p-3 bg-light rounded-3">
+                        <div class="text-emerald fs-4"><i class="bi bi-droplet-half"></i></div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Sodium & Potassium Homeostasis</h6>
+                            <p class="small text-muted mb-0">
+                                Traditional Indian pickles and spice mixes often exceed 4,000 mg of sodium daily. Our tracking highlights sodium-potassium balance using foods like tender coconut water and fresh curds.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="p-4 p-md-5 rounded-4 bg-forest text-white shadow-lg">
+                    <h4 class="font-display fw-bold mb-3 text-white">The Three Pillars of Prevention</h4>
+                    <p class="small text-white-50 mb-4">How continuous lifestyle data intercepts metabolic decline:</p>
+
+                    <div class="mb-3 pb-3 border-bottom border-white border-opacity-10">
+                        <div class="d-flex justify-content-between mb-1">
+                            <strong class="text-white">1. Nutritional Fiber & Protein Ratio</strong>
+                            <span class="text-success small fw-bold">Target &gt; 30g Fiber</span>
+                        </div>
+                        <p class="small text-white-50 mb-0">Delays carbohydrate absorption and sustains intestinal satiety hormones.</p>
+                    </div>
+
+                    <div class="mb-3 pb-3 border-bottom border-white border-opacity-10">
+                        <div class="d-flex justify-content-between mb-1">
+                            <strong class="text-white">2. Post-Meal Ambulation</strong>
+                            <span class="text-success small fw-bold">15-min Walking</span>
+                        </div>
+                        <p class="small text-white-50 mb-0">Stimulates non-insulin GLUT-4 muscular glucose disposal.</p>
+                    </div>
+
+                    <div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <strong class="text-white">3. Circadian Sleep Architecture</strong>
+                            <span class="text-success small fw-bold">7.5–8 Hours</span>
+                        </div>
+                        <p class="small text-white-50 mb-0">Regulates nocturnal cortisol and preserves morning insulin sensitivity.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================================================
+     5. HOW THE PLATFORM WORKS (3-STEP WORKFLOW)
+     ========================================================================== -->
+<section class="story-section bg-light-organic" id="how-it-works">
+    <div class="container text-center">
+        <span class="pill-badge pill-badge-emerald mb-2">SYSTEM WORKFLOW</span>
+        <h2 class="display-6 fw-bold mb-4">Three Steps to Data-Driven Health</h2>
+        
+        <div class="row g-4 mt-2">
+            <div class="col-md-4">
+                <div class="showcase-card p-4">
+                    <div class="display-6 fw-bold text-forest mb-2 font-display">01</div>
+                    <h5 class="fw-bold mb-2">Record Daily Consumption</h5>
+                    <p class="small text-muted mb-0">
+                        Log breakfast, lunch, dinner, or snacks using regional Indian food items. Automatic macro calculation determines exact calories, protein, carbs, and fats.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="showcase-card p-4">
+                    <div class="display-6 fw-bold text-emerald mb-2 font-display">02</div>
+                    <h5 class="fw-bold mb-2">AI Analyzes Remaining Deficits</h5>
+                    <p class="small text-muted mb-0">
+                        The recommendation engine computes your remaining nutritional gaps and selects optimal regional dishes while honoring allergies and dietary restrictions.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="showcase-card p-4">
+                    <div class="display-6 fw-bold text-forest mb-2 font-display">03</div>
+                    <h5 class="fw-bold mb-2">Inspect Explainable ML Insights</h5>
+                    <p class="small text-muted mb-0">
+                        Review your educational Diabetes and Cardiovascular risk probabilities with SHAP attribution charts and converse with your RAG-grounded health assistant.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================================================
+     6. RESEARCH FOUNDATION & PROPOSED CONTRIBUTION (ACADEMIC TABLE)
+     ========================================================================== -->
+<section class="story-section bg-white-clean" id="research">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="pill-badge pill-badge-olive mb-2">ACADEMIC RIGOR</span>
+            <h2 class="display-6 fw-bold mb-2">Research Foundation: Baseline vs. Proposed Contribution</h2>
+            <p class="text-muted lead fs-6 mx-auto" style="max-width: 680px;">
+                Extending the peer-reviewed research paper: <em>"A Regionally Adaptable Nutrition Centric Food Recommendation System (FR-RANC)"</em> (IEEE Access, Vol. 13, 2025).
+            </p>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-research table-bordered mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Dimension</th>
+                        <th style="width: 35%;">FR-RANC Baseline (IEEE Access 2025)</th>
+                        <th style="width: 40%;" class="bg-success text-white">AuraHealth AI (Our Enhanced System)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-bold text-dark">Recommendation Mode</td>
+                        <td>Static, one-time meal suggestions based on initial input.</td>
+                        <td class="bg-success bg-opacity-10 fw-semibold text-dark">
+                            <strong>Continuous Dynamic Tracking:</strong> Recalculates remaining nutritional requirements in real-time with every logged meal.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-dark">Regional Dietary Depth</td>
+                        <td>General broad regional cuisine categories.</td>
+                        <td class="bg-success bg-opacity-10 fw-semibold text-dark">
+                            <strong>Curated Indian & South Indian DB:</strong> 150+ verified items (Idli, Dosa, Ragi Mudde, Sambar) mapped to ICMR-NIN IFCT standards.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-dark">Lifestyle Multi-Modality</td>
+                        <td>Strictly dietary; ignores physical movement and sleep.</td>
+                        <td class="bg-success bg-opacity-10 fw-semibold text-dark">
+                            <strong>Multi-Modal Fusion:</strong> Correlates Steps, MET-based workout calorie burn, Hydration, and Circadian Sleep duration.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-dark">Health Risk Modeling</td>
+                        <td>Rule-based thresholding (BMI & static condition tags).</td>
+                        <td class="bg-success bg-opacity-10 fw-semibold text-dark">
+                            <strong>Supervised Machine Learning:</strong> Scikit-Learn pipelines trained on clinical data (Pima Diabetes & UCI Heart).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-dark">Interpretability (XAI)</td>
+                        <td>Black-box recommendations without explainability.</td>
+                        <td class="bg-success bg-opacity-10 fw-semibold text-dark">
+                            <strong>Explainable AI via SHAP:</strong> Local feature attribution charts showing exact percentage influence of glucose, BMI, and age.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-dark">Conversational AI</td>
+                        <td>Traditional static forms without natural language.</td>
+                        <td class="bg-success bg-opacity-10 fw-semibold text-dark">
+                            <strong>RAG-Grounded Assistant:</strong> Context-aware LLM grounded in verified ICMR-NIN preventive nutrition guidelines.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================================================
+     7. CALL TO ACTION SECTION
+     ========================================================================== -->
+<section class="story-section bg-forest text-white py-5" id="cta">
+    <div class="container text-center py-4">
+        <h2 class="display-5 fw-bold mb-3 text-white font-display">Begin Your Preventive Health Journey</h2>
+        <p class="lead text-white-50 mx-auto mb-4" style="max-width: 620px;">
+            Set up your personalized physiological baseline, explore regional food intelligence, and receive explainable insights tailored to your biology.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            {% if current_user.is_authenticated %}
+                <a href="/dashboard" class="btn btn-light text-forest px-4 py-3 fw-bold fs-6">
+                    <i class="bi bi-grid-1x2-fill me-2"></i> Access Dashboard
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-light text-forest px-4 py-3 fw-bold fs-6">
+                    <i class="bi bi-person-plus-fill me-2"></i> Create Free Account
+                </a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light px-4 py-3 fw-bold fs-6">
+                    Sign In
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Three.js (r160) for WebGL 3D DNA Double Helix -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<!-- GSAP 3.12 and ScrollTrigger for Horizontal Rail & Storytelling Animations -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<!-- Custom Animation & Physics Controllers -->
+<script src="{{ url_for('static', filename='js/hero_animation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo_trail.js') }}"></script>
+<script src="{{ url_for('static', filename='js/landing_scroll.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Personalized Food Recommendations - AuraHealth AI{% endblock %}
+
+{% block content %}
+<div class="container py-4 my-md-2">
+
+    <!-- Header & Research Attribution -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill small">
+                    <i class="bi bi-magic me-1"></i> Continuous Deficit-Filling Engine
+                </span>
+                <span class="badge bg-light text-muted border px-2 py-1 small">
+                    FR-RANC Model Extended
+                </span>
+            </div>
+            <h1 class="h2 fw-bold mb-0 font-display" style="color: var(--color-forest);">
+                Personalized Food Recommendations
+            </h1>
+            <p class="text-muted small mb-0">
+                Culturally adaptable meal suggestions optimized to fill today's specific remaining nutritional deficits.
+            </p>
+        </div>
+
+        <div>
+            <a href="/nutrition" class="btn btn-outline-forest btn-sm">
+                <i class="bi bi-journal-text me-1"></i> Open Meal Journal
+            </a>
+        </div>
+    </div>
+
+    <!-- Active Nutritional Deficits Status Ribbon -->
+    <div class="glass-card p-3 p-md-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small fw-semibold text-uppercase letter-spacing-1">Today's Remaining Nutritional Gap</span>
+            <span class="small text-muted">{{ target_date.strftime('%A, %B %d') }}</span>
+        </div>
+        <div class="row g-3 text-center text-md-start">
+            <div class="col-md-3 border-end-md">
+                <span class="text-muted small">Calorie Budget Remaining</span>
+                <div class="h4 fw-bold mb-0 text-forest font-display">
+                    {{ deficits.calorie_deficit }} <span class="fs-6 fw-normal text-muted">kcal</span>
+                </div>
+                <div class="small text-muted">Consumed: {{ deficits.consumed_calories }} / {{ deficits.target_calories|round(0) }}</div>
+            </div>
+            <div class="col-md-3 border-end-md">
+                <span class="text-muted small">Protein Deficit</span>
+                <div class="h4 fw-bold mb-0 text-success font-display">
+                    {{ deficits.protein_deficit }} <span class="fs-6 fw-normal text-muted">g</span>
+                </div>
+                <div class="small text-muted">Consumed: {{ deficits.consumed_protein }}g today</div>
+            </div>
+            <div class="col-md-3 border-end-md">
+                <span class="text-muted small">Carbohydrate Gap</span>
+                <div class="h4 fw-bold mb-0 text-dark font-display">
+                    {{ deficits.carb_deficit }} <span class="fs-6 fw-normal text-muted">g</span>
+                </div>
+                <div class="small text-muted">Available allowance</div>
+            </div>
+            <div class="col-md-3">
+                <span class="text-muted small">Fat Allowance</span>
+                <div class="h4 fw-bold mb-0 text-dark font-display">
+                    {{ deficits.fat_deficit }} <span class="fs-6 fw-normal text-muted">g</span>
+                </div>
+                <div class="small text-muted">Available allowance</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active User Filters & Meal Time Tabs -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        
+        <!-- Meal Time Selection Pills -->
+        <div class="btn-group p-1 bg-white rounded-pill border shadow-sm" role="group">
+            <a href="/recommendations?meal_time=breakfast&date={{ target_date.isoformat() }}" 
+               class="btn btn-sm rounded-pill px-3 py-2 {{ 'btn-forest' if active_meal_time == 'breakfast' else 'btn-light text-muted' }}">
+                <i class="bi bi-sunrise-fill me-1"></i> Breakfast
+            </a>
+            <a href="/recommendations?meal_time=lunch&date={{ target_date.isoformat() }}" 
+               class="btn btn-sm rounded-pill px-3 py-2 {{ 'btn-forest' if active_meal_time == 'lunch' else 'btn-light text-muted' }}">
+                <i class="bi bi-sun-fill me-1"></i> Lunch
+            </a>
+            <a href="/recommendations?meal_time=snacks&date={{ target_date.isoformat() }}" 
+               class="btn btn-sm rounded-pill px-3 py-2 {{ 'btn-forest' if active_meal_time == 'snacks' else 'btn-light text-muted' }}">
+                <i class="bi bi-cup-hot-fill me-1"></i> Snacks
+            </a>
+            <a href="/recommendations?meal_time=dinner&date={{ target_date.isoformat() }}" 
+               class="btn btn-sm rounded-pill px-3 py-2 {{ 'btn-forest' if active_meal_time == 'dinner' else 'btn-light text-muted' }}">
+                <i class="bi bi-moon-stars-fill me-1"></i> Dinner
+            </a>
+        </div>
+
+        <!-- Constraints Applied Indicator -->
+        <div class="d-flex flex-wrap align-items-center gap-1 small text-muted">
+            <span>Applied Filters:</span>
+            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 text-capitalize">
+                {{ user.profile.dietary_preference }}
+            </span>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 text-capitalize">
+                {{ user.profile.regional_preference.replace('_', ' ') }}
+            </span>
+            {% if user.profile.food_allergies %}
+                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">
+                    Excludes {{ user.profile.food_allergies }}
+                </span>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- Recommendations Cards Grid -->
+    <div class="row g-4">
+        {% if recommendations %}
+            {% for item in recommendations %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100 d-flex flex-column border">
+                        
+                        <!-- Top Header: Dish Title & Match Score -->
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="fw-bold mb-0 text-dark font-display" style="font-size: 1.15rem;">
+                                    {{ item.food_item.food_name }}
+                                </h5>
+                                {% if item.food_item.native_name %}
+                                    <div class="small text-muted fst-italic">{{ item.food_item.native_name }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success text-white px-2 py-1 rounded-pill" style="font-size: 0.78rem;">
+                                    {{ (item.match_score * 100)|round(0)|int }}% Match
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Match Score Progress Bar -->
+                        <div class="progress mb-3" style="height: 5px; background-color: var(--color-sage-light);">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ item.match_score * 100 }}%;"></div>
+                        </div>
+
+                        <!-- Clinical Reasoning Box -->
+                        <div class="p-2 px-3 rounded-2 bg-light border mb-3 small">
+                            <strong class="text-forest d-block mb-1">
+                                <i class="bi bi-lightbulb-fill text-warning me-1"></i> Why Recommended:
+                            </strong>
+                            <span class="text-secondary">{{ item.recommendation_reason }}</span>
+                            {% if item.clinical_justification %}
+                                <div class="text-muted mt-1" style="font-size: 0.75rem;">
+                                    {{ item.clinical_justification|safe }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Serving Size & Nutritional Details Grid -->
+                        <div class="p-3 rounded-3 bg-white border mb-3 small">
+                            <div class="text-muted mb-2 text-center" style="font-size: 0.8rem;">
+                                Serving Size: <strong>{{ item.food_item.serving_unit }} ({{ item.food_item.serving_size_grams }}g)</strong>
+                            </div>
+                            <div class="row g-1 text-center">
+                                <div class="col-3">
+                                    <span class="d-block fw-bold text-forest">{{ item.food_item.calories }}</span>
+                                    <span class="text-muted" style="font-size: 0.72rem;">Calories</span>
+                                </div>
+                                <div class="col-3">
+                                    <span class="d-block fw-bold text-success">{{ item.food_item.protein_g }}g</span>
+                                    <span class="text-muted" style="font-size: 0.72rem;">Protein</span>
+                                </div>
+                                <div class="col-3">
+                                    <span class="d-block fw-bold text-dark">{{ item.food_item.carbs_g }}g</span>
+                                    <span class="text-muted" style="font-size: 0.72rem;">Carbs</span>
+                                </div>
+                                <div class="col-3">
+                                    <span class="d-block fw-bold text-muted">{{ item.food_item.fat_g }}g</span>
+                                    <span class="text-muted" style="font-size: 0.72rem;">Fat</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- One-Click Accept & Log Button -->
+                        <div class="mt-auto pt-2">
+                            <form method="POST" action="/api/v1/recommendations/accept/{{ item.id }}">
+                                <button type="submit" class="btn btn-forest w-100 py-2 small fw-semibold">
+                                    <i class="bi bi-check2-circle me-1"></i> Accept &amp; Log This Meal
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="text-muted fs-2 mb-2"><i class="bi bi-check-all text-success"></i></div>
+                <h5 class="fw-bold text-dark mb-1">Nutritional Targets Well Balanced!</h5>
+                <p class="small text-muted mb-3" style="max-width: 480px; margin: 0 auto;">
+                    You have satisfied your caloric and macronutrient targets for {{ active_meal_time.capitalize() }}, or your allergy restrictions leave no candidates in this specific category.
+                </p>
+                <a href="/nutrition" class="btn btn-outline-forest btn-sm">
+                    View Complete Food Journal
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

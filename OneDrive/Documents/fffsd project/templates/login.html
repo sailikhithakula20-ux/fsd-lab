@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - AuraHealth AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 my-md-4">
+    <div class="row justify-content-center align-items-center g-4">
+        
+        <!-- Left Branding & Clinical Storytelling Column -->
+        <div class="col-lg-5 d-none d-lg-block">
+            <div class="pe-lg-4">
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill mb-3">
+                    <i class="bi bi-shield-lock-fill me-1"></i> Secure Health Portal
+                </span>
+                <h1 class="display-6 fw-bold mb-3" style="color: var(--color-forest);">
+                    Continuous Preventive Wellness Powered by Data.
+                </h1>
+                <p class="text-muted mb-4 lead" style="font-size: 1.05rem;">
+                    Sign in to track daily Indian regional nutrition, monitor your metabolic risk indicators, and access explainable AI recommendations tailored to your biology.
+                </p>
+
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex align-items-start gap-3 p-3 bg-white rounded-3 border" style="border-color: var(--color-border) !important;">
+                        <div class="p-2 rounded-2 bg-success bg-opacity-10 text-success fs-5">
+                            <i class="bi bi-egg-fried"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1 text-dark">Real-Time Deficit-Filling</h6>
+                            <p class="small text-muted mb-0">Every meal logged dynamically adjusts lunch and dinner recommendations to meet ICMR-NIN RDA targets.</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start gap-3 p-3 bg-white rounded-3 border" style="border-color: var(--color-border) !important;">
+                        <div class="p-2 rounded-2 bg-success bg-opacity-10 text-success fs-5">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1 text-dark">Supervised Machine Learning & SHAP</h6>
+                            <p class="small text-muted mb-0">Assess Type-2 Diabetes and Cardiovascular risks with local feature attribution explanations.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sign In Card -->
+        <div class="col-lg-5 col-md-8">
+            <div class="glass-card p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="brand-icon-pill mx-auto mb-3" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-person-fill-lock"></i>
+                    </div>
+                    <h2 class="h3 fw-bold mb-1" style="color: var(--color-forest);">Welcome Back</h2>
+                    <p class="text-muted small">Enter your credentials to access your personal health metrics.</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <!-- Email Field -->
+                    <div class="mb-3">
+                        <label for="{{ form.email.id }}" class="form-label fw-semibold small text-secondary">
+                            {{ form.email.label.text }}
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            {{ form.email(class="form-control bg-light border-start-0" + (" is-invalid" if form.email.errors else "")) }}
+                            {% for error in form.email.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="{{ form.password.id }}" class="form-label fw-semibold small text-secondary mb-0">
+                                {{ form.password.label.text }}
+                            </label>
+                            <a href="#" class="small text-decoration-none text-muted" onclick="alert('Password reset instructions will be sent to verified accounts. For this demonstration, you can also use your registered credentials or register a new account.'); return false;">
+                                Forgot password?
+                            </a>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted">
+                                <i class="bi bi-key"></i>
+                            </span>
+                            {{ form.password(class="form-control bg-light border-start-0 border-end-0" + (" is-invalid" if form.password.errors else ""), id="passwordInput") }}
+                            <button class="btn btn-light border border-start-0 text-muted" type="button" id="togglePasswordBtn">
+                                <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                            </button>
+                            {% for error in form.password.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Remember Me Checkbox -->
+                    <div class="mb-4 form-check">
+                        {{ form.remember_me(class="form-check-input") }}
+                        <label class="form-check-label small text-muted" for="{{ form.remember_me.id }}">
+                            {{ form.remember_me.label.text }}
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid mb-3">
+                        {{ form.submit(class="btn btn-forest py-2 fw-semibold fs-6") }}
+                    </div>
+
+                    <div class="text-center mt-4 pt-2 border-top">
+                        <span class="small text-muted">Don't have a health profile yet?</span>
+                        <a href="{{ url_for('auth.register') }}" class="small fw-bold text-success text-decoration-none ms-1">
+                            Create an account
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Password visibility toggle
+    const toggleBtn = document.getElementById('togglePasswordBtn');
+    const passwordInput = document.getElementById('passwordInput');
+    const toggleIcon = document.getElementById('togglePasswordIcon');
+
+    if (toggleBtn && passwordInput && toggleIcon) {
+        toggleBtn.addEventListener('click', () => {
+            const isPassword = passwordInput.getAttribute('type') === 'password';
+            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+            toggleIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+        });
+    }
+</script>
+{% endblock %}

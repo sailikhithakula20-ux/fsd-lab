@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Nutrition & Food Tracker - AuraHealth AI{% endblock %}
+
+{% block content %}
+<div class="container py-4 my-md-2">
+
+    <!-- Top Navigation & Date Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill small">
+                    <i class="bi bi-egg-fried me-1"></i> ICMR-NIN IFCT Verified Database
+                </span>
+            </div>
+            <h1 class="h2 fw-bold mb-0 font-display" style="color: var(--color-forest);">
+                Smart Nutrition Tracker
+            </h1>
+            <p class="text-muted small mb-0">Record meals with exact portion scaling and track macronutrient distribution.</p>
+        </div>
+
+        <!-- Date Filter & Quick Add Controls -->
+        <div class="d-flex align-items-center gap-2">
+            <input type="date" class="form-control form-control-sm bg-light" id="trackerDatePicker" 
+                   value="{{ target_date.isoformat() }}" 
+                   onchange="window.location.href='/nutrition?date=' + this.value">
+            <button class="btn btn-outline-forest btn-sm" data-bs-toggle="modal" data-bs-target="#customFoodModal">
+                <i class="bi bi-plus-circle me-1"></i> Custom Food
+            </button>
+        </div>
+    </div>
+
+    <!-- Daily Nutritional Summary Ribbon -->
+    <div class="glass-card p-3 p-md-4 mb-4">
+        <div class="row g-3 align-items-center text-center text-md-start">
+            <div class="col-md-3 border-end-md">
+                <span class="text-muted small">Calories Balance</span>
+                <div class="h4 fw-bold mb-0 text-forest font-display">
+                    {{ daily_summary.nutrition.calories.consumed }} <span class="fs-6 fw-normal text-muted">/ {{ daily_summary.nutrition.calories.target|round(0) }} kcal</span>
+                </div>
+                <div class="small text-muted">{{ daily_summary.nutrition.calories.remaining }} kcal remaining</div>
+            </div>
+            <div class="col-md-3 border-end-md">
+                <span class="text-muted small">Protein Met</span>
+                <div class="h4 fw-bold mb-0 text-success font-display">
+                    {{ daily_summary.nutrition.protein.consumed }}g <span class="fs-6 fw-normal text-muted">/ {{ daily_summary.nutrition.protein.target|round(1) }}g</span>
+                </div>
+                <div class="small text-muted">{{ daily_summary.nutrition.protein.remaining }}g deficit</div>
+            </div>
+            <div class="col-md-3 border-end-md">
+                <span class="text-muted small">Carbohydrates</span>
+                <div class="h4 fw-bold mb-0 text-dark font-display">
+                    {{ daily_summary.nutrition.carbs.consumed }}g <span class="fs-6 fw-normal text-muted">/ {{ daily_summary.nutrition.carbs.target|round(1) }}g</span>
+                </div>
+                <div class="small text-muted">{{ daily_summary.nutrition.carbs.remaining }}g remaining</div>
+            </div>
+            <div class="col-md-3">
+                <span class="text-muted small">Healthy Fats</span>
+                <div class="h4 fw-bold mb-0 text-dark font-display">
+                    {{ daily_summary.nutrition.fat.consumed }}g <span class="fs-6 fw-normal text-muted">/ {{ daily_summary.nutrition.fat.target|round(1) }}g</span>
+                </div>
+                <div class="small text-muted">{{ daily_summary.nutrition.fat.remaining }}g remaining</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid: Left = Meals by Type, Right = Interactive Food Search -->
+    <div class="row g-4">
+        
+        <!-- Left Column: Logged Meals by Category (Breakfast, Lunch, Snacks, Dinner) -->
+        <div class="col-lg-6">
+            <h5 class="fw-bold mb-3 text-forest font-display">
+                <i class="bi bi-clock-history me-1"></i> Today's Meal Journal
+            </h5>
+
+            <div class="d-flex flex-column gap-3">
+                {% for meal_key, meal in meals_by_type.items() %}
+                    <div class="glass-card p-3 p-md-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="p-2 rounded-2 bg-success bg-opacity-10 text-success fs-6">
+                                    {% if meal_key == 'breakfast' %}<i class="bi bi-sunrise-fill"></i>
+                                    {% elif meal_key == 'lunch' %}<i class="bi bi-sun-fill"></i>
+                                    {% elif meal_key == 'snacks' %}<i class="bi bi-cup-hot-fill"></i>
+                                    {% else %}<i class="bi bi-moon-stars-fill"></i>{% endif %}
+                                </span>
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark">{{ meal.meal_name }}</h6>
+                                    <span class="small text-muted">
+                                        {{ meal.subtotals.calories }} kcal &bull; {{ meal.subtotals.protein }}g Protein
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if meal.logs %}
+                            <div class="d-flex flex-column gap-2 mb-2">
+                                {% for item in meal.logs %}
+                                    <div class="p-2 px-3 rounded-2 bg-light border d-flex justify-content-between align-items-center small">
+                                        <div>
+                                            <strong class="text-dark">{{ item.food_item.food_name if item.food_item else 'Custom Dish' }}</strong>
+                                            <span class="text-muted ms-1">({{ item.quantity_multiplier }}x)</span>
+                                            <div class="text-muted" style="font-size: 0.78rem;">
+                                                <span class="text-forest fw-semibold">{{ item.calories }} kcal</span> &bull; 
+                                                P: {{ item.protein }}g &bull; C: {{ item.carbs }}g &bull; F: {{ item.fat }}g
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <form method="POST" action="/api/v1/nutrition/log/{{ item.id }}" onsubmit="return confirm('Remove this meal record?');">
+                                                <button type="submit" class="btn btn-link text-danger p-0 border-0" title="Delete entry">
+                                                    <i class="bi bi-trash3"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="small text-muted mb-2 fst-italic">No dishes logged for {{ meal.meal_name.lower() }} yet.</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right Column: Interactive Search & Food Database Catalog -->
+        <div class="col-lg-6">
+            <div class="glass-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-forest font-display">
+                        <i class="bi bi-search me-1"></i> Regional Food Catalog
+                    </h5>
+                    <span class="badge bg-light text-muted border small">Click to portion &amp; log</span>
+                </div>
+
+                <!-- Search & Filter Controls -->
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control bg-light" id="foodSearchInput" 
+                                   placeholder="Search Idli, Dosa, Sambar, Ragi...">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select form-select-sm bg-light" id="categoryFilter">
+                            <option value="">All Categories</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-center">
+                        <div class="form-check form-switch small">
+                            <input class="form-check-input" type="checkbox" id="vegFilterCheck">
+                            <label class="form-check-label text-muted" for="vegFilterCheck" style="font-size: 0.8rem;">Veg</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Search Results Grid -->
+                <div class="row g-2" id="foodSearchResults" style="max-height: 540px; overflow-y: auto;">
+                    <!-- Injected via static/js/nutrition_tracker.js -->
+                    <div class="col-12 text-center py-4 text-muted">
+                        <div class="spinner-border spinner-border-sm text-forest" role="status"></div>
+                        <span class="small ms-2">Loading verified regional foods...</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Modal: Log Meal with Live Proportional Scaler -->
+<div class="modal fade" id="logMealModal" tabindex="-1" aria-labelledby="logMealModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: var(--radius-lg);">
+            <div class="modal-header border-bottom pb-2">
+                <div>
+                    <h5 class="modal-title fw-bold text-forest mb-0 font-display" id="modalFoodName">Portion Food Item</h5>
+                    <span class="small text-muted" id="modalServingInfo"></span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form method="POST" action="/api/v1/nutrition/log">
+                <input type="hidden" name="food_item_id" id="modalFoodId">
+                <input type="hidden" name="log_date" value="{{ target_date.isoformat() }}">
+
+                <div class="modal-body py-3">
+                    
+                    <!-- Meal Type Selection -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Target Meal Category</label>
+                        <select name="meal_type_id" class="form-select bg-light" required>
+                            {% for mt in meal_types %}
+                                <option value="{{ mt.id }}">{{ mt.name.capitalize() }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Quantity Multiplier Input -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label fw-semibold small text-secondary mb-0">Portion / Serving Multiplier</label>
+                            <span class="small text-muted">e.g. 1.0 = standard serving</span>
+                        </div>
+                        <input type="number" step="0.25" min="0.25" max="10.0" name="quantity_multiplier" 
+                               id="modalMultiplier" class="form-control text-center fw-bold fs-5 bg-light" value="1.0" required>
+                    </div>
+
+                    <!-- Quick Portion Selection Pills -->
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <button type="button" class="btn btn-outline-forest btn-sm btn-portion" data-value="0.5">0.5x</button>
+                        <button type="button" class="btn btn-outline-forest btn-sm btn-portion active" data-value="1.0">1.0x</button>
+                        <button type="button" class="btn btn-outline-forest btn-sm btn-portion" data-value="1.5">1.5x</button>
+                        <button type="button" class="btn btn-outline-forest btn-sm btn-portion" data-value="2.0">2.0x</button>
+                    </div>
+
+                    <!-- Live Calculated Nutrients Preview Box -->
+                    <div class="p-3 rounded-3 bg-light border text-center">
+                        <span class="text-muted small text-uppercase fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Calculated Intake</span>
+                        <div class="h3 fw-bold my-1 text-forest font-display">
+                            <span id="previewCalories">--</span> <small class="fs-6 fw-normal text-muted">kcal</small>
+                        </div>
+                        <div class="d-flex justify-content-around small pt-1 border-top mt-2">
+                            <span>Protein: <strong class="text-success" id="previewProtein">--</strong></span>
+                            <span>Carbs: <strong class="text-dark" id="previewCarbs">--</strong></span>
+                            <span>Fat: <strong class="text-muted" id="previewFat">--</strong></span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer border-top pt-2">
+                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-forest btn-sm px-4">
+                        <i class="bi bi-check2 me-1"></i> Confirm &amp; Log Meal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Custom Food Item -->
+<div class="modal fade" id="customFoodModal" tabindex="-1" aria-labelledby="customFoodModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: var(--radius-lg);">
+            <div class="modal-header border-bottom pb-2">
+                <h5 class="modal-title fw-bold text-forest mb-0 font-display">Add Custom Food Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form method="POST" action="/api/v1/nutrition/custom">
+                <div class="modal-body py-3">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Food Name *</label>
+                            <input type="text" name="food_name" class="form-control form-control-sm" required placeholder="e.g. Moong Sprouts Salad">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Native Name</label>
+                            <input type="text" name="native_name" class="form-control form-control-sm" placeholder="e.g. Kosambari">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Food Category</label>
+                            <select name="category_id" class="form-select form-select-sm">
+                                {% for cat in categories %}
+                                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Regional Tag</label>
+                            <select name="regional_tag" class="form-select form-select-sm">
+                                <option value="south_indian">South Indian</option>
+                                <option value="north_indian">North Indian</option>
+                                <option value="pan_india">Pan-India</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label fw-semibold small text-secondary">Calories *</label>
+                            <input type="number" step="0.1" name="calories" class="form-control form-control-sm" required placeholder="140">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label fw-semibold small text-secondary">Protein (g)</label>
+                            <input type="number" step="0.1" name="protein_g" class="form-control form-control-sm" value="0.0">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label fw-semibold small text-secondary">Carbs (g)</label>
+                            <input type="number" step="0.1" name="carbs_g" class="form-control form-control-sm" value="0.0">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label fw-semibold small text-secondary">Fats (g)</label>
+                            <input type="number" step="0.1" name="fat_g" class="form-control form-control-sm" value="0.0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top pt-2">
+                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-forest btn-sm px-3">Save Dish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/nutrition_tracker.js') }}"></script>
+{% endblock %}
